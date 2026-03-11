@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IIT Gandhinagar | Membership Portal</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="light-mode">
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="https://library.iitgn.ac.in/images/lib_logo1.png" alt="IITGN Library Logo" style="height: 48px;">
+        </div>
+        <div class="navbar-actions">
+            <!-- Social Links -->
+            <div class="social-links" style="display: flex; gap: 8px; margin-right: 12px; border-right: 1px solid var(--border-color); padding-right: 20px;">
+                <a href="https://in.linkedin.com/school/indian-institute-of-technology-gandhinagar-iitgn-/" target="_blank" class="icon-button" aria-label="LinkedIn" title="IITGN LinkedIn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                </a>
+                <a href="https://www.youtube.com/user/IITGN1" target="_blank" class="icon-button" aria-label="YouTube" title="IITGN YouTube">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
+                </a>
+                <a href="https://www.instagram.com/iit_gandhinagar" target="_blank" class="icon-button" aria-label="Instagram" title="IITGN Instagram">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                </a>
+                <a href="https://www.facebook.com/iitgn.official" target="_blank" class="icon-button" aria-label="Facebook" title="IITGN Facebook">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                </a>
+                <a href="https://x.com/iitgn" target="_blank" class="icon-button" aria-label="Twitter" title="IITGN Twitter">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+                </a>
+            </div>
+            <!-- Theme Toggle -->
+            <button id="themeToggle" class="icon-button" aria-label="Toggle Theme">
+                <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                <svg id="sunIcon" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            </button>
+            <button id="notificationToggle" class="icon-button notification-btn" aria-label="Notifications">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                <span class="notification-badge" id="notificationBadge">0</span>
+            </button>
+        </div>
+    </nav>
+    <main class="main-content">
+        <header class="page-header">
+            <h2>IITGN Membership Dashboard</h2>
+            <p>Manage and monitor all library subscriptions and members</p>
+        </header>
+
+        <!-- Stats Cards -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <h3>ACTIVE SUBSCRIPTIONS</h3>
+                <p id="statActive">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>EXPIRED SUBSCRIPTIONS</h3>
+                <p id="statExpired">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>TOTAL MEMBERS</h3>
+                <p id="statTotal">0</p>
+            </div>
+        </section>
+
+        <!-- Actions Bar -->
+        <section class="actions-bar">
+            <div class="search-box">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="searchInput" placeholder="Search by Name, Membership ID or Invoice No...">
+            </div>
+            <div class="filter-group">
+                <button class="filter-btn active" data-filter="All">All</button>
+                <button class="filter-btn" data-filter="Organisation">Organisation</button>
+                <button class="filter-btn" data-filter="Individual">Individual</button>
+            </div>
+        </section>
+
+        <!-- Action Area (New Features) -->
+        <section class="page-actions" style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
+             <button id="addSubscriptionBtn" class="btn btn-primary">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                 Add New Subscription
+             </button>
+        </section>
+
+        <!-- Data List -->
+        <p class="results-text" id="resultsText">0 subscriptions found</p>
+        <div class="membership-list" id="membershipList">
+            <!-- Items injected by JS -->
+        </div>
+        
+        <!-- Pagination -->
+        <div class="pagination" id="paginationSection">
+            <button class="btn btn-outline" id="prevPageBtn">Prev</button>
+            <div class="page-numbers" id="pageNumbers"></div>
+            <button class="btn btn-outline" id="nextPageBtn">Next</button>
+        </div>
+
+        <!-- DETAIL VIEW SECTION (Hidden by default) -->
+        <section id="detailViewSection" class="detail-view" style="display: none;">
+            <div class="detail-top-bar">
+                <button class="btn btn-outline btn-sm" id="backToDashboardBtn">← Back to Dashboard</button>
+            </div>
+            
+            <div class="detail-header-card">
+                <h2 id="detailName">Member Name</h2>
+                <div class="detail-badges">
+                    <span id="detailId" class="badge">M-0000</span>
+                    <span id="detailTypeBadge" class="badge">Type</span>
+                    <span id="detailStatusBadge" class="badge">Status</span>
+                </div>
+            </div>
+
+            <div class="detail-grid">
+                <!-- Column 1 -->
+                <div class="detail-column">
+                    <div class="detail-section-card">
+                        <h3>SUBSCRIPTION DETAILS</h3>
+                        <div class="info-group">
+                            <label>INVOICE NO.</label>
+                            <p id="detailInvoiceNo">-</p>
+                        </div>
+                        <div class="info-group">
+                            <label>CATEGORY</label>
+                            <p id="detailCategory">-</p>
+                        </div>
+                        <div class="info-group">
+                            <label>SUB-CATEGORY</label>
+                            <p id="detailSubCategory">-</p>
+                        </div>
+                        <div class="info-group">
+                            <label>ADMISSION FEE</label>
+                            <p id="detailAdmissionFee">-</p>
+                        </div>
+                        <div class="info-group">
+                            <label>DEPOSIT AMOUNT</label>
+                            <p id="detailDepositAmount">-</p>
+                        </div>
+                        <div class="info-group" style="margin-top: var(--spacing-md); padding-top: var(--spacing-sm); border-top: 1px solid var(--border-color);">
+                            <label>MEMBERSHIP FEE</label>
+                            <p id="detailAmount" style="font-weight: 700; color: var(--text-primary);">₹0</p>
+                        </div>
+                        <div class="info-group">
+                            <label>SUBSCRIPTION DATE</label>
+                            <p id="detailSubDate">-</p>
+                        </div>
+                        <div class="info-group">
+                            <label>EXPIRY DATE</label>
+                            <p id="detailExpDate">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column 2 -->
+                <div class="detail-column">
+                    <div class="detail-section-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg); border-bottom: 1px solid var(--border-color); padding-bottom: var(--spacing-sm);">
+                            <h3 style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;" id="detailPersonalHeader">PERSONAL DETAILS</h3>
+                            <button class="btn btn-outline btn-sm" id="detailEditBtn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                Edit Details
+                            </button>
+                        </div>
+
+                        <!-- ORG DETAILS VIEW -->
+                        <div id="detailOrgView" style="display: none;">
+                            <div class="info-group">
+                                <label>MEMBERSHIP ID</label>
+                                <p id="detailOrgMemberId">-</p>
+                            </div>
+                            <div class="info-group">
+                                <label>ORGANISATION PHONE NO.</label>
+                                <p id="detailOrgPhone">-</p>
+                            </div>
+                            <div class="info-group">
+                                <label>ORGANISATION EMAIL ID</label>
+                                <p id="detailOrgEmail">-</p>
+                            </div>
+                            <div class="info-group">
+                                <label>ORGANISATION ADDRESS</label>
+                                <p id="detailOrgAddress">-</p>
+                            </div>
+                            <div class="info-group">
+                                <label>GSTIN</label>
+                                <p id="detailOrgGstin" style="font-family: monospace;">-</p>
+                            </div>
+
+                            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm); font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 0.05em;">CORRESPONDING AUTHORITY</h4>
+                            <div class="info-group">
+                                <label>NAME</label>
+                                <p id="detailAuthName">-</p>
+                            </div>
+                            <div class="info-group">
+                                <label>PHONE NO.</label>
+                                <p id="detailAuthPhone">-</p>
+                            </div>
+                            <div class="info-group">
+                                <label>EMAIL ID</label>
+                                <p id="detailAuthEmail">-</p>
+                            </div>
+                        </div>
+
+                        <!-- INDIVIDUAL DETAILS VIEW -->
+                        <div id="detailIndView" style="display: none;">
+                            <div class="info-group">
+                                <label>MEMBERSHIP ID</label>
+                                <p id="detailIndMemberId">-</p>
+                            </div>
+                            <div class="info-group">
+                                <label>PHONE NO.</label>
+                                <p id="detailIndPhone">-</p>
+                            </div>
+                            <div class="info-group">
+                                <label>EMAIL ID</label>
+                                <p id="detailIndEmail">-</p>
+                            </div>
+                            <div class="info-group">
+                                <label>ADDRESS</label>
+                                <p id="detailIndAddress">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section-card mt-lg">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
+                    <h3 style="margin-bottom: 0;">MEMBERSHIP HISTORY</h3>
+                    <button class="btn btn-outline btn-sm" id="editInvoiceBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Add Entry
+                    </button>
+                </div>
+
+                <!-- PDF Upload (above the table) -->
+                <div style="margin-bottom: var(--spacing-md);">
+                    <p style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin: 0 0 8px;">INVOICE PDF</p>
+                    <!-- Upload Zone (shown when no PDF uploaded) -->
+                    <div class="pdf-upload-zone" id="pdfUploadZone" style="padding: var(--spacing-md);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-secondary); margin-bottom: 8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        <p style="margin: 0 0 8px; font-size: 0.875rem; font-weight: 500; color: var(--text-primary);">Upload Invoice PDF</p>
+                        <p style="margin: 0 0 12px; font-size: 0.75rem; color: var(--text-secondary);">Drag &amp; drop or click to choose (max 5MB)</p>
+                        <label for="pdfFileInput" class="btn btn-outline btn-sm" style="cursor: pointer;">Choose PDF</label>
+                        <input type="file" id="pdfFileInput" accept="application/pdf" style="display: none;">
+                    </div>
+                    <!-- PDF Preview (shown when a PDF is uploaded) -->
+                    <div class="pdf-preview-zone" id="pdfPreviewZone" style="display: none;">
+                        <div class="pdf-file-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        </div>
+                        <div class="pdf-file-info">
+                            <p id="pdfFileName" style="font-weight: 600; margin: 0 0 2px; color: var(--text-primary);">invoice.pdf</p>
+                            <p id="pdfFileSize" style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">PDF Document</p>
+                        </div>
+                        <div style="display: flex; gap: var(--spacing-sm); margin-left: auto;">
+                            <a id="pdfViewBtn" href="#" target="_blank" class="btn btn-primary btn-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                View
+                            </a>
+                            <button class="btn btn-outline btn-sm" id="pdfRemoveBtn" style="border-color: var(--danger-color); color: var(--danger-color);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg>
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Table -->
+                <div class="invoice-table-wrapper">
+                    <table class="invoice-table" id="invoiceRecordTable">
+                        <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th>Invoice No.</th>
+                                <th>Start Date</th>
+                                <th>Expiry Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoiceTableBody">
+                            <!-- Rows populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="detail-actions mt-lg" style="display: flex; justify-content: flex-end; gap: var(--spacing-md);">
+                 <button class="btn btn-outline" id="detailDeleteBtn" style="border-color: var(--danger-color); color: var(--danger-color);">Delete</button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Add History Entry Modal -->
+    <div id="addEntryModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Add History Entry</h3>
+                <button class="icon-button" id="closeAddEntryBtn" aria-label="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <form id="addEntryForm" style="padding: var(--spacing-lg);">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="entryInvoiceNo">Invoice No.</label>
+                        <input type="text" id="entryInvoiceNo" placeholder="e.g. INV-12080">
+                    </div>
+                    <div class="form-group">
+                        <label for="entryStatus">Status</label>
+                        <select id="entryStatus">
+                            <option value="Active">Active</option>
+                            <option value="Expired">Expired</option>
+                            <option value="Warning">Warning</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="entryDate">Start Date</label>
+                        <input type="date" id="entryDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="entryExpiryDate">Expiry Date</label>
+                        <input type="date" id="entryExpiryDate" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="entryAmount">Amount (₹)</label>
+                    <input type="number" id="entryAmount" placeholder="e.g. 150000" required>
+                </div>
+                <div class="modal-footer" style="margin-top: var(--spacing-lg);">
+                    <button type="button" class="btn btn-outline" id="cancelAddEntryBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Entry</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Add/Edit -->
+    <div id="subscriptionModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add Subscription</h3>
+                <button class="icon-button" id="closeModalBtn" aria-label="Close Modal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <form id="subscriptionForm">
+                <input type="hidden" id="subId">
+                <div id="basicFormFields">
+                    <div class="form-group">
+                        <label for="subName">Member Name</label>
+                        <input type="text" id="subName" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="subType">Type</label>
+                            <select id="subType">
+                                <option value="Organisation">Organisation</option>
+                                <option value="Individual">Individual</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="subCategory">Category</label>
+                            <select id="subCategory">
+                                <!-- Options populated by JS depending on Type -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="subSubCategory">Sub-Category</label>
+                            <select id="subSubCategory">
+                                <!-- Options populated by JS depending on Category -->
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <h4 style="margin-top: var(--spacing-md); margin-bottom: var(--spacing-sm); font-size: 0.875rem; color: var(--text-secondary);">FEES & DEPOSIT</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="subAdmissionFee">Admission Fee (₹)</label>
+                            <input type="number" id="subAdmissionFee" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="subAmount">Membership Fee (₹)</label>
+                            <input type="number" id="subAmount" required>
+                        </div>
+                    </div>
+                    <div class="form-row" style="align-items: flex-end;">
+                        <div class="form-group">
+                            <label for="subDepositToggle">Deposit Required?</label>
+                            <select id="subDepositToggle">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="depositAmountGroup">
+                            <label for="subDepositAmount">Deposit Amount (₹)</label>
+                            <input type="number" id="subDepositAmount" placeholder="0">
+                        </div>
+                    </div>
+
+                    <h4 style="margin-top: var(--spacing-md); margin-bottom: var(--spacing-sm); font-size: 0.875rem; color: var(--text-secondary);">SUBSCRIPTION DATES</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="subDate">Start Date</label>
+                            <input type="date" id="subDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="subExpiryDate">Expiry Date</label>
+                            <input type="date" id="subExpiryDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="subStatus">Status</label>
+                            <select id="subStatus">
+                                <option value="Active">Active</option>
+                                <option value="Warning">Warning</option>
+                                <option value="Expired">Expired</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="personalFormFields" style="display: none;">
+                    
+                    <!-- ORGANISATION FIELDS -->
+                    <div id="orgPersonalFields">
+                        <h4 style="margin-bottom: var(--spacing-md); font-size: 0.875rem; color: var(--text-secondary);">ORGANISATION DETAILS</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="orgMemberId">Membership ID</label>
+                                <input type="text" id="orgMemberId" placeholder="e.g. M-0001">
+                            </div>
+                            <div class="form-group">
+                                <label for="orgPhone">Organisation Phone No.</label>
+                                <input type="tel" id="orgPhone" placeholder="e.g. 9010626991">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="orgEmail">Organisation Email ID</label>
+                                <input type="email" id="orgEmail" placeholder="e.g. plant@gmail.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="orgGstin">GSTIN</label>
+                                <input type="text" id="orgGstin" placeholder="e.g. 357RIK099HA19ZT">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="orgAddress">Organisation Address</label>
+                            <input type="text" id="orgAddress" placeholder="e.g. Mumbai, Maharashtra">
+                        </div>
+
+                        <h4 style="margin-top: var(--spacing-md); margin-bottom: var(--spacing-sm); font-size: 0.875rem; color: var(--text-secondary);">CORRESPONDING AUTHORITY</h4>
+                        <div class="form-group">
+                            <label for="authName">Authority Name</label>
+                            <input type="text" id="authName" placeholder="e.g. John Doe">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="authPhone">Authority Phone No.</label>
+                                <input type="tel" id="authPhone" placeholder="e.g. 9876543210">
+                            </div>
+                            <div class="form-group">
+                                <label for="authEmail">Authority Email ID</label>
+                                <input type="email" id="authEmail" placeholder="e.g. john@example.com">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- INDIVIDUAL FIELDS -->
+                    <div id="indPersonalFields" style="display: none;">
+                        <h4 style="margin-bottom: var(--spacing-md); font-size: 0.875rem; color: var(--text-secondary);">PERSONAL DETAILS</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="indMemberId">Membership ID</label>
+                                <input type="text" id="indMemberId" placeholder="e.g. M-0058">
+                            </div>
+                            <div class="form-group">
+                                <label for="indPhone">Phone No.</label>
+                                <input type="tel" id="indPhone" placeholder="e.g. 9010626991">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="indEmail">Email ID</label>
+                            <input type="email" id="indEmail" placeholder="e.g. user@gmail.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="indAddress">Address</label>
+                            <input type="text" id="indAddress" placeholder="e.g. Pune, Maharashtra">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="invoiceFormFields" style="display: none;">
+                    <h4 style="margin-bottom: var(--spacing-md); font-size: 0.875rem; color: var(--text-secondary);">INVOICE</h4>
+                    
+                    <div class="form-group">
+                        <label for="subInvoiceNo">Invoice No.</label>
+                        <input type="text" id="subInvoiceNo" placeholder="e.g. INV-12010">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="invoiceDetails">Invoice Details / Image URL (Optional)</label>
+                        <textarea id="invoiceDetails" rows="2" placeholder="Notes or paste an image URL to display..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" id="deleteSubBtn" style="display: none; border-color: var(--danger-color); color: var(--danger-color);">Delete</button>
+                    <div style="flex: 1;"></div>
+                    <button type="button" class="btn btn-outline" id="cancelModalBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveSubBtn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Side Drawer -->
+    <div id="drawerOverlay" class="drawer-overlay" style="display: none;"></div>
+    <div id="notificationDrawer" class="side-drawer">
+        <div class="drawer-header">
+            <h3>Expiry Notifications</h3>
+            <button class="icon-button" id="closeDrawerBtn" aria-label="Close Drawer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+        <div class="drawer-content" id="drawerContent">
+            <!-- Notifications injected by JS -->
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
