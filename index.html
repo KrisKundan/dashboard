@@ -229,45 +229,37 @@
             </div>
 
             <div class="detail-section-card mt-lg">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--spacing-md);">
                     <h3 style="margin-bottom: 0;">MEMBERSHIP HISTORY</h3>
-                    <button class="btn btn-outline btn-sm" id="editInvoiceBtn">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                        Add Entry
-                    </button>
+                    <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
+                        <div class="form-group" style="margin-bottom: 0; min-width: 140px;">
+                            <label for="detailMembershipStatus" style="font-size: 0.65rem; margin-bottom: 4px;">MEMBERSHIP</label>
+                            <select id="detailMembershipStatus" style="padding: 4px 8px; font-size: 0.875rem;">
+                                <option value="Continuing">Continuing</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-outline btn-sm" id="editInvoiceBtn" style="height: 32px; margin-top: auto;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            Add Entry
+                        </button>
+                    </div>
                 </div>
 
-                <!-- PDF Upload (above the table) -->
-                <div style="margin-bottom: var(--spacing-md);">
-                    <p style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin: 0 0 8px;">INVOICE PDF</p>
-                    <!-- Upload Zone (shown when no PDF uploaded) -->
-                    <div class="pdf-upload-zone" id="pdfUploadZone" style="padding: var(--spacing-md);">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-secondary); margin-bottom: 8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                        <p style="margin: 0 0 8px; font-size: 0.875rem; font-weight: 500; color: var(--text-primary);">Upload Invoice PDF</p>
-                        <p style="margin: 0 0 12px; font-size: 0.75rem; color: var(--text-secondary);">Drag &amp; drop or click to choose (max 5MB)</p>
-                        <label for="pdfFileInput" class="btn btn-outline btn-sm" style="cursor: pointer;">Choose PDF</label>
-                        <input type="file" id="pdfFileInput" accept="application/pdf" style="display: none;">
-                    </div>
-                    <!-- PDF Preview (shown when a PDF is uploaded) -->
-                    <div class="pdf-preview-zone" id="pdfPreviewZone" style="display: none;">
-                        <div class="pdf-file-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                        </div>
-                        <div class="pdf-file-info">
-                            <p id="pdfFileName" style="font-weight: 600; margin: 0 0 2px; color: var(--text-primary);">invoice.pdf</p>
-                            <p id="pdfFileSize" style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">PDF Document</p>
-                        </div>
-                        <div style="display: flex; gap: var(--spacing-sm); margin-left: auto;">
-                            <a id="pdfViewBtn" href="#" target="_blank" class="btn btn-primary btn-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                View
-                            </a>
-                            <button class="btn btn-outline btn-sm" id="pdfRemoveBtn" style="border-color: var(--danger-color); color: var(--danger-color);">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg>
-                                Remove
-                            </button>
+                <div id="refundProcessSection" style="display: none; margin-bottom: var(--spacing-md); padding: var(--spacing-md); background-color: rgba(239, 68, 68, 0.05); border: 1px solid var(--danger-color); border-radius: var(--radius-md);">
+                    <div style="display: flex; align-items: flex-start; gap: var(--spacing-sm);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--danger-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top: 2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <div style="flex: 1;">
+                            <h4 style="color: var(--danger-color); margin: 0 0 8px 0; font-size: 0.875rem;">Refund Process Required</h4>
+                            <p style="margin: 0 0 12px 0; font-size: 0.875rem; color: var(--text-secondary);">This membership is cancelled and has a deposit of <strong id="refundDepositAmount" style="color: var(--text-primary);">₹0</strong> that needs to be refunded.</p>
+                            <button class="btn btn-primary btn-sm" id="initiateRefundBtn">Initiate Refund</button>
                         </div>
                     </div>
+                </div>
+
+                <div style="margin-bottom: var(--spacing-md); padding: var(--spacing-md); background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">Total Amount Paid</span>
+                    <span id="detailTotalHistoryAmount" style="font-size: 1.25rem; font-weight: 700; color: var(--primary-color);">₹0</span>
                 </div>
 
                 <!-- History Table -->
@@ -281,6 +273,8 @@
                                 <th>Expiry Date</th>
                                 <th>Amount</th>
                                 <th>Status</th>
+                                <th>Invoice PDF</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody id="invoiceTableBody">
@@ -291,7 +285,7 @@
             </div>
 
             <div class="detail-actions mt-lg" style="display: flex; justify-content: flex-end; gap: var(--spacing-md);">
-                 <button class="btn btn-outline" id="detailDeleteBtn" style="border-color: var(--danger-color); color: var(--danger-color);">Delete</button>
+                 <!-- Removed Delete Button -->
             </div>
         </section>
 
@@ -312,14 +306,6 @@
                         <label for="entryInvoiceNo">Invoice No.</label>
                         <input type="text" id="entryInvoiceNo" placeholder="e.g. INV-12080">
                     </div>
-                    <div class="form-group">
-                        <label for="entryStatus">Status</label>
-                        <select id="entryStatus">
-                            <option value="Active">Active</option>
-                            <option value="Expired">Expired</option>
-                            <option value="Warning">Warning</option>
-                        </select>
-                    </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -334,6 +320,12 @@
                 <div class="form-group">
                     <label for="entryAmount">Amount (₹)</label>
                     <input type="number" id="entryAmount" placeholder="e.g. 150000" required>
+                </div>
+                <!-- New PDF Upload Field -->
+                <div class="form-group" style="margin-top: var(--spacing-md);">
+                    <label for="entryPdfFile" style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 8px;">Upload Invoice PDF (Optional)</label>
+                    <p style="margin: 0 0 12px; font-size: 0.75rem; color: var(--text-secondary);">Max size: 5MB. PDF format only.</p>
+                    <input type="file" id="entryPdfFile" accept="application/pdf" class="form-control" style="padding: 8px; border: 1px solid var(--border-color); border-radius: var(--radius-md); width: 100%; box-sizing: border-box;">
                 </div>
                 <div class="modal-footer" style="margin-top: var(--spacing-lg);">
                     <button type="button" class="btn btn-outline" id="cancelAddEntryBtn">Cancel</button>
@@ -407,22 +399,14 @@
                     </div>
 
                     <h4 style="margin-top: var(--spacing-md); margin-bottom: var(--spacing-sm); font-size: 0.875rem; color: var(--text-secondary);">SUBSCRIPTION DATES</h4>
-                    <div class="form-row">
-                        <div class="form-group">
+                    <div class="form-row" style="justify-content: flex-start; gap: var(--spacing-md);">
+                        <div class="form-group" style="flex: unset; width: 48%;">
                             <label for="subDate">Start Date</label>
                             <input type="date" id="subDate" required>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" style="flex: unset; width: 48%;">
                             <label for="subExpiryDate">Expiry Date</label>
                             <input type="date" id="subExpiryDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="subStatus">Status</label>
-                            <select id="subStatus">
-                                <option value="Active">Active</option>
-                                <option value="Warning">Warning</option>
-                                <option value="Expired">Expired</option>
-                            </select>
                         </div>
                     </div>
                 </div>
@@ -513,7 +497,6 @@
                 </div>
 
                 <div class="modal-actions">
-                    <button type="button" class="btn btn-outline" id="deleteSubBtn" style="display: none; border-color: var(--danger-color); color: var(--danger-color);">Delete</button>
                     <div style="flex: 1;"></div>
                     <button type="button" class="btn btn-outline" id="cancelModalBtn">Cancel</button>
                     <button type="submit" class="btn btn-primary" id="saveSubBtn">Save</button>

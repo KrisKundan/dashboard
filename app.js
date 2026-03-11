@@ -126,8 +126,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const invoiceViewer = document.getElementById('invoiceViewer');
     const detailEditBtn = document.getElementById('detailEditBtn');
-    const detailDeleteBtn = document.getElementById('detailDeleteBtn');
     const editInvoiceBtn = document.getElementById('editInvoiceBtn');
+    
+    // Membership Status Elements
+    const detailMembershipStatus = document.getElementById('detailMembershipStatus');
+    const refundProcessSection = document.getElementById('refundProcessSection');
+    const refundDepositAmount = document.getElementById('refundDepositAmount');
+    const initiateRefundBtn = document.getElementById('initiateRefundBtn');
 
     // Stats & Filters
     const statActive = document.getElementById('statActive');
@@ -142,7 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const subAmountInput = document.getElementById('subAmount');
     const subDateInput = document.getElementById('subDate');
     const subTypeInput = document.getElementById('subType');
-    const subStatusInput = document.getElementById('subStatus');
     
     // New Form Inputs
     const subCategoryInput = document.getElementById('subCategory');
@@ -182,11 +186,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const subForm = document.getElementById('subscriptionForm');
     const closeModalBtn = document.getElementById('closeModalBtn');
     const cancelModalBtn = document.getElementById('cancelModalBtn');
-    const deleteSubBtn = document.getElementById('deleteSubBtn');
     const addSubBtn = document.getElementById('addSubscriptionBtn');
 
     // --- 4. Core Logic Functions ---
     function updateStats() {
+        // Recompute the latest status for all items to be safe so the top level displays correct counts
+        memberships.forEach(m => m.status = getLatestSummaryStatus(m));
         const activeCount = memberships.filter(m => m.status === 'Active' || m.status === 'Warning').length;
         const expiredCount = memberships.filter(m => m.status === 'Expired').length;
         
@@ -217,6 +222,31 @@ document.addEventListener('DOMContentLoaded', () => {
         return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     }
 
+    function calculateStatus(expiryDateStr) {
+        if (!expiryDateStr) return 'Expired';
+        
+        const now = new Date();
+        const expiryDate = new Date(expiryDateStr);
+        
+        // Reset time for accurate day comparison
+        now.setHours(0, 0, 0, 0);
+        expiryDate.setHours(0, 0, 0, 0);
+
+        if (expiryDate < now) {
+            return 'Expired';
+        }
+        
+        // Check for warning (e.g., within 30 days)
+        const timeDiff = expiryDate.getTime() - now.getTime();
+        const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        
+        if (daysDiff <= 30) {
+            return 'Warning';
+        }
+        
+        return 'Active';
+    }
+
     function renderList() {
         // Filter Data
         let filtered = memberships.filter(m => {
@@ -242,12 +272,13 @@ document.addEventListener('DOMContentLoaded', () => {
         paginatedItems.forEach(item => {
             const listEl = document.createElement('div');
             listEl.className = 'list-item';
+            const calculatedStatus = calculateStatus(item.expiryDate);
             listEl.innerHTML = `
                 <div class="item-id">${item.id}</div>
                 <div class="item-name">${item.name}</div>
                 <div class="item-amount">${formatCurrency(item.amount)}</div>
                 <span class="badge ${getBadgeClass(item.type)}">${item.type === 'Organisation' ? 'Org' : 'Ind'}</span>
-                <span class="badge ${getBadgeClass(item.status)}">${item.status}</span>
+                <span class="badge ${getBadgeClass(calculatedStatus)}">${calculatedStatus}</span>
                 <button class="btn btn-outline btn-sm" onclick="editMembership('${item.id}')">Edit</button>
                 <button class="btn btn-primary" onclick="viewMembership('${item.id}')">View More →</button>
             `;
@@ -281,8 +312,12 @@ document.addEventListener('DOMContentLoaded', () => {
         detailTypeBadge.textContent = item.type;
         detailTypeBadge.className = `badge ${getBadgeClass(item.type)}`;
         
-        detailStatusBadge.textContent = item.status;
-        detailStatusBadge.className = `badge ${getBadgeClass(item.status)}`;
+        const calculatedTopStatus = calculateStatus(item.expiryDate);
+        detailStatusBadge.textContent = calculatedTopStatus;
+        detailStatusBadge.className = `badge ${getBadgeClass(calculatedTopStatus)}`;
+
+        detailMembershipStatus.value = item.membershipStatus || 'Continuing';
+        updateRefundUI(item);
 
         detailInvoiceNo.textContent = item.invoiceNo || '-';
         detailCategory.textContent = item.category || '-';
@@ -320,16 +355,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Populate Subscription Record Table
         const invoiceTableBody = document.getElementById('invoiceTableBody');
+        const detailTotalHistoryAmount = document.getElementById('detailTotalHistoryAmount');
         const history = item.invoiceHistory || [
             // If legacy data, create a single row from the primary record
-            { invoiceNo: item.invoiceNo || '-', date: item.date, expiryDate: item.expiryDate, amount: item.amount, status: item.status }
+            { invoiceNo: item.invoiceNo || '-', date: item.date, expiryDate: item.expiryDate, amount: item.amount }
         ];
+
+        let totalAmountPaid = 0;
 
         invoiceTableBody.innerHTML = '';
         if (history.length === 0) {
-            invoiceTableBody.innerHTML = '<tr><td colspan="6" class="table-empty-state">No records found.</td></tr>';
+            invoiceTableBody.innerHTML = '<tr><td colspan="7" class="table-empty-state">No records found.</td></tr>';
         } else {
             history.forEach((entry, idx) => {
+                totalAmountPaid += (entry.amount || 0);
+                const entryStatus = calculateStatus(entry.expiryDate);
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${idx + 1}</td>
@@ -337,90 +377,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${formatDate(entry.date)}</td>
                     <td>${formatDate(entry.expiryDate)}</td>
                     <td>${formatCurrency(entry.amount)}</td>
-                    <td><span class="badge ${getBadgeClass(entry.status)}">${entry.status}</span></td>
+                    <td><span class="badge ${getBadgeClass(entryStatus)}">${entryStatus}</span></td>
+                    <td>
+                        ${entry.pdfData ? `<a href="${entry.pdfData}" download="${entry.pdfName || 'invoice.pdf'}" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 0.75rem;">Download PDF</a>` : '-'}
+                    <td>
+                        <button class="btn btn-outline btn-sm" style="border-color: var(--danger-color); color: var(--danger-color); padding: 2px 8px; font-size: 0.75rem;" onclick="deleteHistoryEntry('${item.id}', ${idx})">Delete</button>
+                    </td>
                 `;
                 invoiceTableBody.appendChild(row);
             });
         }
-        // Update PDF upload UI to match the current member
-        updatePdfUI(id);
+        
+        detailTotalHistoryAmount.textContent = formatCurrency(totalAmountPaid);
+
     }
-
-    const pdfUploadZone = document.getElementById('pdfUploadZone');
-    const pdfPreviewZone = document.getElementById('pdfPreviewZone');
-    const pdfFileInput = document.getElementById('pdfFileInput');
-    const pdfFileName = document.getElementById('pdfFileName');
-    const pdfFileSize = document.getElementById('pdfFileSize');
-    const pdfViewBtn = document.getElementById('pdfViewBtn');
-    const pdfRemoveBtn = document.getElementById('pdfRemoveBtn');
-
-    function updatePdfUI(id) {
-        const item = memberships.find(m => m.id === id);
-        if (item && item.invoicePdf) {
-            pdfUploadZone.style.display = 'none';
-            pdfPreviewZone.style.display = 'flex';
-            pdfFileName.textContent = item.invoicePdfName || 'invoice.pdf';
-            pdfFileSize.textContent = item.invoicePdfSize || 'PDF Document';
-            pdfViewBtn.href = item.invoicePdf; // base64 data URL
-        } else {
-            pdfUploadZone.style.display = 'flex';
-            pdfPreviewZone.style.display = 'none';
-        }
-    }
-
-    function handlePdfFile(file) {
-        if (!file || file.type !== 'application/pdf') {
-            alert('Please select a valid PDF file.');
-            return;
-        }
-        if (file.size > 5 * 1024 * 1024) {
-            alert('PDF file size must be less than 5MB for storage in the browser.');
-            return;
-        }
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const item = memberships.find(m => m.id === currentDetailId);
-            if (item) {
-                item.invoicePdf = e.target.result;
-                item.invoicePdfName = file.name;
-                item.invoicePdfSize = (file.size / 1024).toFixed(1) + ' KB';
-                saveData();
-                updatePdfUI(currentDetailId);
-            }
-        };
-        reader.readAsDataURL(file);
-    }
-
-    pdfFileInput.addEventListener('change', (e) => {
-        if (e.target.files[0]) handlePdfFile(e.target.files[0]);
-    });
-
-    pdfUploadZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        pdfUploadZone.classList.add('drag-over');
-    });
-
-    pdfUploadZone.addEventListener('dragleave', () => {
-        pdfUploadZone.classList.remove('drag-over');
-    });
-
-    pdfUploadZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        pdfUploadZone.classList.remove('drag-over');
-        if (e.dataTransfer.files[0]) handlePdfFile(e.dataTransfer.files[0]);
-    });
-
-    pdfRemoveBtn.addEventListener('click', () => {
-        const item = memberships.find(m => m.id === currentDetailId);
-        if (item && confirm('Are you sure you want to remove the uploaded PDF?')) {
-            delete item.invoicePdf;
-            delete item.invoicePdfName;
-            delete item.invoicePdfSize;
-            saveData();
-            updatePdfUI(currentDetailId);
-            pdfFileInput.value = ''; // reset input so same file can be re-uploaded
-        }
-    });
 
     // --- Add History Entry Modal Logic ---
     const addEntryModal = document.getElementById('addEntryModal');
@@ -431,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const entryDate = document.getElementById('entryDate');
     const entryExpiryDate = document.getElementById('entryExpiryDate');
     const entryAmount = document.getElementById('entryAmount');
-    const entryStatus = document.getElementById('entryStatus');
+    const entryPdfFile = document.getElementById('entryPdfFile');
 
     // "Add Entry" button opens the modal
     document.getElementById('editInvoiceBtn').addEventListener('click', () => {
@@ -461,17 +431,41 @@ document.addEventListener('DOMContentLoaded', () => {
             item.invoiceHistory = [];
         }
 
-        item.invoiceHistory.push({
+        const newEntry = {
             invoiceNo: entryInvoiceNo.value || '-',
             date: entryDate.value,
             expiryDate: entryExpiryDate.value,
-            amount: parseFloat(entryAmount.value) || 0,
-            status: entryStatus.value
-        });
+            amount: parseFloat(entryAmount.value) || 0
+        };
 
-        saveData();
-        showDetailView(currentDetailId); // Re-render the detail view to refresh the table
-        closeAddEntryModal();
+        const file = entryPdfFile.files[0];
+        if (file) {
+            if (file.type !== 'application/pdf') {
+                alert('Please select a valid PDF file.');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                alert('PDF file size must be less than 5MB.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                newEntry.pdfData = evt.target.result;
+                newEntry.pdfName = file.name;
+                
+                item.invoiceHistory.push(newEntry);
+                saveData();
+                showDetailView(currentDetailId); 
+                closeAddEntryModal();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            item.invoiceHistory.push(newEntry);
+            saveData();
+            showDetailView(currentDetailId);
+            closeAddEntryModal();
+        }
     });
 
     function hideDetailView() {
@@ -498,18 +492,69 @@ document.addEventListener('DOMContentLoaded', () => {
         openModal(true, currentDetailId, 'personal');
     });
 
-    editInvoiceBtn.addEventListener('click', () => {
-        openModal(true, currentDetailId, 'invoice');
+    function getLatestSummaryStatus(item) {
+        if (item.invoiceHistory && item.invoiceHistory.length > 0) {
+            // Get the most recent valid expiry date from history
+            const latestHistory = item.invoiceHistory.reduce((latest, current) => {
+                const latestDate = new Date(latest.expiryDate);
+                const currentDate = new Date(current.expiryDate);
+                // Return whichever is further in the future
+                return currentDate > latestDate ? current : latest;
+            }, item.invoiceHistory[0]);
+            
+            // Update the top level summary field based on latest history
+            item.expiryDate = latestHistory.expiryDate;
+            return calculateStatus(latestHistory.expiryDate);
+        } else {
+             return calculateStatus(item.expiryDate);
+        }
+    }
+
+    window.deleteHistoryEntry = function(memberId, historyIndex) {
+        if (confirm('Are you sure you want to delete this history record?')) {
+            const item = memberships.find(m => m.id === memberId);
+            if (item && item.invoiceHistory) {
+                // Remove the item at the specific index
+                item.invoiceHistory.splice(historyIndex, 1);
+                
+                // If history is now empty, reset PDF upload fields for consistency
+                if (item.invoiceHistory.length === 0) {
+                     delete item.invoicePdf;
+                     delete item.invoicePdfName;
+                     delete item.invoicePdfSize;
+                } else {
+                     item.status = getLatestSummaryStatus(item);
+                }
+                
+                saveData();
+                showDetailView(memberId); // Refresh the view
+                updateStats(); // Update dashboard counts
+                renderList();
+            }
+        }
+    };
+
+    // Membership Status Handling
+    function updateRefundUI(item) {
+        if (item.membershipStatus === 'Cancelled' && item.depositToggle === 'Yes' && item.depositAmount > 0) {
+            refundProcessSection.style.display = 'block';
+            refundDepositAmount.textContent = formatCurrency(item.depositAmount);
+        } else {
+            refundProcessSection.style.display = 'none';
+        }
+    }
+
+    detailMembershipStatus.addEventListener('change', (e) => {
+        const item = memberships.find(m => m.id === currentDetailId);
+        if (item) {
+            item.membershipStatus = e.target.value;
+            saveData();
+            updateRefundUI(item);
+        }
     });
 
-    detailDeleteBtn.addEventListener('click', () => {
-        if (confirm('Are you sure you want to delete this subscription?')) {
-            memberships = memberships.filter(m => m.id !== currentDetailId);
-            saveData();
-            hideDetailView();
-            updateStats();
-            renderList();
-        }
+    initiateRefundBtn.addEventListener('click', () => {
+        alert('Refund process initiated for ' + formatCurrency(memberships.find(m => m.id === currentDetailId).depositAmount));
     });
 
     // --- 6. Event Listeners & Modal CRUD ---
@@ -550,8 +595,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalTitle.textContent = 'Edit Subscription';
             }
             
-            deleteSubBtn.style.display = 'block';
-            
             const item = memberships.find(m => m.id === id);
             if (item) {
                 // Populate basic fields first as Type affects other sections
@@ -560,7 +603,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 subAmountInput.value = item.amount;
                 subDateInput.value = item.date;
                 subTypeInput.value = item.type;
-                subStatusInput.value = item.status;
                 
                 // Show/hide relevant personal detail sections
                 if (item.type === 'Organisation') {
@@ -606,7 +648,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             modalTitle.textContent = 'Add Subscription';
-            deleteSubBtn.style.display = 'none';
             subForm.reset();
             subIdInput.value = '';
             
@@ -715,7 +756,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const amount = parseFloat(subAmountInput.value);
         const date = subDateInput.value;
         const type = subTypeInput.value;
-        const status = subStatusInput.value;
         
         // Grab extended fields depending on Type
         let phone = '';
@@ -754,6 +794,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const admissionFee = parseFloat(subAdmissionFeeInput.value) || 0;
         const depositToggle = subDepositToggleInput.value;
         const depositAmount = parseFloat(subDepositAmountInput.value) || 0;
+        
+        const calculatedStatus = calculateStatus(expiryDate);
 
         if (id) {
             // Edit
@@ -761,7 +803,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (index !== -1) {
                 // If memberId changed, we should technically update id, but let's keep id as internal primary key and memberId as display
                 memberships[index] = { 
-                    ...memberships[index], name, amount, date, type, status, phone, email, address, gstin, 
+                    ...memberships[index], name, amount, date, type, status: calculatedStatus, phone, email, address, gstin, 
                     invoiceNo, expiryDate, invoiceDetails, category, subCategory, admissionFee, 
                     depositToggle, depositAmount, memberId, authName, authPhone, authEmail 
                 };
@@ -775,7 +817,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Use provided memberId, otherwise fallback to random generation
             const finalId = memberId || ('M-' + Math.floor(1000 + Math.random() * 9000));
             memberships.unshift({ 
-                id: finalId, memberId: finalId, name, amount, date, type, status, phone, email, address, gstin, 
+                id: finalId, memberId: finalId, name, amount, date, type, status: calculatedStatus, phone, email, address, gstin, 
                 invoiceNo, expiryDate, invoiceDetails, category, subCategory, admissionFee, 
                 depositToggle, depositAmount, authName, authPhone, authEmail 
             });
@@ -787,22 +829,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderList();
     });
 
-    deleteSubBtn.addEventListener('click', () => {
-        const id = subIdInput.value;
-        if (id && confirm('Are you sure you want to delete this subscription?')) {
-            memberships = memberships.filter(m => m.id !== id);
-            saveData();
-            closeModal();
-            updateStats();
-            renderList();
-            
-            // If deleted while viewing, go back
-            if (currentDetailId === id) {
-                hideDetailView();
-            }
-        }
-    });
-
     // --- 7. Notification Drawer Logic ---
     const notificationToggle = document.getElementById('notificationToggle');
     const notificationBadge = document.getElementById('notificationBadge');
@@ -812,6 +838,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const drawerContent = document.getElementById('drawerContent');
 
     function updateNotifications() {
+        // Calculate latest status dynamically for all memberships before filtering for notifications.
+        memberships.forEach(m => {
+            m.status = getLatestSummaryStatus(m);
+        });
         const warnings = memberships.filter(m => m.status === 'Warning' || m.status === 'Expired');
         notificationBadge.textContent = warnings.length;
         
