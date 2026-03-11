@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body class="light-mode">
     <nav class="navbar">
@@ -255,6 +255,13 @@
                             <button class="btn btn-primary btn-sm" id="initiateRefundBtn">Initiate Refund</button>
                         </div>
                     </div>
+                </div>
+
+                <div id="refundInitiatedMsg" style="display: none; margin-bottom: var(--spacing-md); align-items: center; justify-content: flex-end;">
+                    <span style="display: flex; align-items: center; gap: 6px; color: var(--success-color); font-size: 0.9rem; font-weight: 600;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        Your refund is initiated
+                    </span>
                 </div>
 
                 <div style="margin-bottom: var(--spacing-md); padding: var(--spacing-md); background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between;">
@@ -519,6 +526,6 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=2"></script>
 </body>
 </html>

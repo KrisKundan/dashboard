@@ -133,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const refundProcessSection = document.getElementById('refundProcessSection');
     const refundDepositAmount = document.getElementById('refundDepositAmount');
     const initiateRefundBtn = document.getElementById('initiateRefundBtn');
+    const refundInitiatedMsg = document.getElementById('refundInitiatedMsg');
 
     // Stats & Filters
     const statActive = document.getElementById('statActive');
@@ -537,10 +538,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Membership Status Handling
     function updateRefundUI(item) {
         if (item.membershipStatus === 'Cancelled' && item.depositToggle === 'Yes' && item.depositAmount > 0) {
-            refundProcessSection.style.display = 'block';
-            refundDepositAmount.textContent = formatCurrency(item.depositAmount);
+            if (item.refundStatus === 'Initiated') {
+                refundProcessSection.style.display = 'none';
+                refundInitiatedMsg.style.display = 'block';
+            } else {
+                refundProcessSection.style.display = 'block';
+                refundInitiatedMsg.style.display = 'none';
+                refundDepositAmount.textContent = formatCurrency(item.depositAmount);
+            }
         } else {
             refundProcessSection.style.display = 'none';
+            refundInitiatedMsg.style.display = 'none';
         }
     }
 
@@ -554,7 +562,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     initiateRefundBtn.addEventListener('click', () => {
-        alert('Refund process initiated for ' + formatCurrency(memberships.find(m => m.id === currentDetailId).depositAmount));
+        const item = memberships.find(m => m.id === currentDetailId);
+        if (item) {
+            item.refundStatus = 'Initiated';
+            saveData();
+            updateRefundUI(item);
+        }
     });
 
     // --- 6. Event Listeners & Modal CRUD ---
