@@ -525,6 +525,22 @@
         </div>
     </div>
 
-    <script src="app.js?v=2"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDamJ0udVkfc4c1l2quXHPbdIc2SpH6FMU",
+            authDomain: "dashboard-a7520.firebaseapp.com",
+            projectId: "dashboard-a7520",
+            storageBucket: "dashboard-a7520.firebasestorage.app",
+            messagingSenderId: "732714672212",
+            appId: "1:732714672212:web:95fa4995a48d9cc1c10dc1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+    </script>
+    <script type="module" src="app.js?v=2"></script>
 </body>
 </html>

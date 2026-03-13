@@ -1,4 +1,13 @@
-document.addEventListener('DOMContentLoaded', () => {
+import { collection, getDocs, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // Ensure Firebase is initialized
+    if (!window.db) {
+        console.error("Firebase not initialized in window.db");
+        return;
+    }
+    const db = window.db;
+    const membershipsCollection = collection(db, "memberships");
     // 1. Theme Toggling Logic
     const themeToggleBtn = document.getElementById('themeToggle');
     const moonIcon = document.getElementById('moonIcon');
@@ -64,13 +73,68 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     ];
 
-    // Initialize from localStorage or use defaults
-    const savedData = localStorage.getItem('membershipData');
-    let memberships = savedData ? JSON.parse(savedData) : defaultMemberships;
+    // Initialize from Firestore
+    let memberships = [];
 
-    function saveData() {
-        localStorage.setItem('membershipData', JSON.stringify(memberships));
+    async function loadData() {
+        try {
+            const querySnapshot = await getDocs(membershipsCollection);
+            const loaded = [];
+            querySnapshot.forEach((doc) => {
+                loaded.push(doc.data());
+            });
+            memberships = loaded.length > 0 ? loaded : defaultMemberships;
+            
+            // If we loaded default data because Firestore is empty, save it
+            if (loaded.length === 0) {
+                memberships.forEach(m => saveData(m));
+            }
+            
+            updateStats();
+            updateNotifications();
+            renderList();
+            
+            // Re-render detail view if one is active
+            if (currentDetailId) {
+                showDetailView(currentDetailId);
+            }
+        } catch (error) {
+            console.error("Error loading documents: ", error);
+        }
     }
+
+    async function saveData(itemToSave = null) {
+        try {
+            if (itemToSave) {
+                // Save a specific item
+                await setDoc(doc(db, "memberships", itemToSave.id), itemToSave);
+            } else {
+                // Save all if no specific item was passed (legacy support)
+                for (const m of memberships) {
+                    await setDoc(doc(db, "memberships", m.id), m);
+                }
+            }
+        } catch (error) {
+            console.error("Error saving document: ", error);
+        }
+    }
+
+    // Set up real-time listener
+    onSnapshot(membershipsCollection, (snapshot) => {
+        const loaded = [];
+        snapshot.forEach((doc) => {
+            loaded.push(doc.data());
+        });
+        if (loaded.length > 0) {
+            memberships = loaded;
+            updateStats();
+            updateNotifications();
+            renderList();
+            if (currentDetailId) {
+                showDetailView(currentDetailId);
+            }
+        }
+    });
 
     let currentFilter = 'All';
     let searchQuery = '';
@@ -456,14 +520,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 newEntry.pdfName = file.name;
                 
                 item.invoiceHistory.push(newEntry);
-                saveData();
+                saveData(item);
                 showDetailView(currentDetailId); 
                 closeAddEntryModal();
             };
             reader.readAsDataURL(file);
         } else {
             item.invoiceHistory.push(newEntry);
-            saveData();
+            saveData(item);
             showDetailView(currentDetailId);
             closeAddEntryModal();
         }
@@ -527,7 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
                      item.status = getLatestSummaryStatus(item);
                 }
                 
-                saveData();
+                saveData(item);
                 showDetailView(memberId); // Refresh the view
                 updateStats(); // Update dashboard counts
                 renderList();
@@ -556,7 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const item = memberships.find(m => m.id === currentDetailId);
         if (item) {
             item.membershipStatus = e.target.value;
-            saveData();
+            saveData(item);
             updateRefundUI(item);
         }
     });
@@ -565,7 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const item = memberships.find(m => m.id === currentDetailId);
         if (item) {
             item.refundStatus = 'Initiated';
-            saveData();
+            saveData(item);
             updateRefundUI(item);
         }
     });
@@ -829,17 +893,18 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add
             // Use provided memberId, otherwise fallback to random generation
             const finalId = memberId || ('M-' + Math.floor(1000 + Math.random() * 9000));
-            memberships.unshift({ 
+            const newItem = { 
                 id: finalId, memberId: finalId, name, amount, date, type, status: calculatedStatus, phone, email, address, gstin, 
                 invoiceNo, expiryDate, invoiceDetails, category, subCategory, admissionFee, 
                 depositToggle, depositAmount, authName, authPhone, authEmail 
-            });
+            };
+            memberships.unshift(newItem);
+            saveData(newItem);
         }
 
-        saveData();
+        // We don't strictly need to call renderList here because onSnapshot will trigger it,
+        // but closeModal gives immediate UI feedback.
         closeModal();
-        updateStats();
-        renderList();
     });
 
     // --- 7. Notification Drawer Logic ---
@@ -897,9 +962,7 @@ document.addEventListener('DOMContentLoaded', () => {
     closeDrawerBtn.addEventListener('click', () => toggleDrawer(true));
     drawerOverlay.addEventListener('click', () => toggleDrawer(true));
 
-    // Update Initial Render to include notifications
     // --- 8. Initial Render ---
-    updateStats();
-    updateNotifications();
-    renderList();
+    // Start the loading process
+    loadData();
 });
