@@ -196,8 +196,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const detailMembershipStatus = document.getElementById('detailMembershipStatus');
     const refundProcessSection = document.getElementById('refundProcessSection');
     const refundDepositAmount = document.getElementById('refundDepositAmount');
-    const initiateRefundBtn = document.getElementById('initiateRefundBtn');
+    const uploadRefundDocBtn = document.getElementById('uploadRefundDocBtn');
+    const refundDocFile = document.getElementById('refundDocFile');
+    const refundFileError = document.getElementById('refundFileError');
     const refundInitiatedMsg = document.getElementById('refundInitiatedMsg');
+    const refundDocName = document.getElementById('refundDocName');
+    const refundDocDownload = document.getElementById('refundDocDownload');
 
     // Stats & Filters
     const statActive = document.getElementById('statActive');
@@ -603,10 +607,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (item.refundStatus === 'Initiated') {
                 refundProcessSection.style.display = 'none';
                 refundInitiatedMsg.style.display = 'block';
+                refundDocName.textContent = item.refundDocName ? `· ${item.refundDocName}` : '';
+                if (item.refundDocData) {
+                    refundDocDownload.href = item.refundDocData;
+                    refundDocDownload.download = item.refundDocName || 'refund-document';
+                    refundDocDownload.style.display = 'inline-flex';
+                } else {
+                    refundDocDownload.style.display = 'none';
+                }
             } else {
                 refundProcessSection.style.display = 'block';
                 refundInitiatedMsg.style.display = 'none';
                 refundDepositAmount.textContent = formatCurrency(item.depositAmount);
+                refundFileError.style.display = 'none';
+                refundDocFile.value = '';
             }
         } else {
             refundProcessSection.style.display = 'none';
@@ -623,13 +637,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    initiateRefundBtn.addEventListener('click', () => {
-        const item = memberships.find(m => m.id === currentDetailId);
-        if (item) {
-            item.refundStatus = 'Initiated';
-            saveData(item);
-            updateRefundUI(item);
+    uploadRefundDocBtn.addEventListener('click', () => {
+        const file = refundDocFile.files[0];
+        refundFileError.style.display = 'none';
+
+        if (!file) {
+            refundFileError.textContent = 'Please select a document to upload.';
+            refundFileError.style.display = 'block';
+            return;
         }
+        if (file.size > 5 * 1024 * 1024) {
+            refundFileError.textContent = 'File size must be less than 5MB.';
+            refundFileError.style.display = 'block';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const item = memberships.find(m => m.id === currentDetailId);
+            if (item) {
+                item.refundStatus = 'Initiated';
+                item.refundDocData = evt.target.result;
+                item.refundDocName = file.name;
+                saveData(item);
+                updateRefundUI(item);
+            }
+        };
+        reader.readAsDataURL(file);
     });
 
     // --- 6. Event Listeners & Modal CRUD ---
