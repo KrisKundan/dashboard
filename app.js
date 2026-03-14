@@ -208,6 +208,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Form inputs
     const subIdInput = document.getElementById('subId');
+    const subMemberIdInput = document.getElementById('subMemberId');
     const subNameInput = document.getElementById('subName');
     const subAmountInput = document.getElementById('subAmount');
     const subDateInput = document.getElementById('subDate');
@@ -676,6 +677,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (item) {
                 // Populate basic fields first as Type affects other sections
                 subIdInput.value = item.id;
+                subMemberIdInput.value = item.memberId || item.id;
                 subNameInput.value = item.name;
                 subAmountInput.value = item.amount;
                 subDateInput.value = item.date;
@@ -727,7 +729,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             modalTitle.textContent = 'Add Subscription';
             subForm.reset();
             subIdInput.value = '';
-            
+            subMemberIdInput.value = '';
+
             subDateInput.value = new Date().toISOString().split('T')[0];
             // Setup default expiry to 1 year
             const nextYear = new Date();
@@ -829,6 +832,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.preventDefault();
 
         const id = subIdInput.value;
+        const inputMemberId = subMemberIdInput.value.trim();
         const name = subNameInput.value;
         const amount = parseFloat(subAmountInput.value);
         const date = subDateInput.value;
@@ -890,11 +894,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showDetailView(id);
             }
         } else {
-            // Add
-            // Use provided memberId, otherwise fallback to random generation
-            const finalId = memberId || ('M-' + Math.floor(1000 + Math.random() * 9000));
+            // Add — use the Membership ID the user typed in the form
+            if (!inputMemberId) {
+                alert('Please enter a Membership ID.');
+                return;
+            }
+            if (memberships.find(m => m.id === inputMemberId)) {
+                alert(`Membership ID "${inputMemberId}" already exists. Please use a unique ID.`);
+                return;
+            }
             const newItem = { 
-                id: finalId, memberId: finalId, name, amount, date, type, status: calculatedStatus, phone, email, address, gstin, 
+                id: inputMemberId, memberId: inputMemberId, name, amount, date, type, status: calculatedStatus, phone, email, address, gstin, 
                 invoiceNo, expiryDate, invoiceDetails, category, subCategory, admissionFee, 
                 depositToggle, depositAmount, authName, authPhone, authEmail 
             };
