@@ -447,7 +447,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <td><span class="badge ${getBadgeClass(entryStatus)}">${entryStatus}</span></td>
                     <td>
                         ${entry.pdfData ? `<a href="${entry.pdfData}" download="${entry.pdfName || 'invoice.pdf'}" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 0.75rem;">Download PDF</a>` : '-'}
-                    <td>
+                    </td>
+                    <td style="display:flex; gap:4px;">
+                        <button class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 0.75rem;" onclick="editHistoryEntry('${item.id}', ${idx})">Edit</button>
                         <button class="btn btn-outline btn-sm" style="border-color: var(--danger-color); color: var(--danger-color); padding: 2px 8px; font-size: 0.75rem;" onclick="deleteHistoryEntry('${item.id}', ${idx})">Delete</button>
                     </td>
                 `;
@@ -461,6 +463,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Add History Entry Modal Logic ---
     const addEntryModal = document.getElementById('addEntryModal');
+    const addEntryModalTitle = document.getElementById('addEntryModalTitle');
     const addEntryForm = document.getElementById('addEntryForm');
     const closeAddEntryBtn = document.getElementById('closeAddEntryBtn');
     const cancelAddEntryBtn = document.getElementById('cancelAddEntryBtn');
@@ -469,9 +472,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const entryExpiryDate = document.getElementById('entryExpiryDate');
     const entryAmount = document.getElementById('entryAmount');
     const entryPdfFile = document.getElementById('entryPdfFile');
+    const editEntryIndexInput = document.getElementById('editEntryIndex');
 
-    // "Add Entry" button opens the modal
+    let editEntryIndex = -1; // -1 = adding new, >= 0 = editing existing
+
+    // "Add Entry" button opens the modal in Add mode
     document.getElementById('editInvoiceBtn').addEventListener('click', () => {
+        editEntryIndex = -1;
+        editEntryIndexInput.value = -1;
+        addEntryModalTitle.textContent = 'Add History Entry';
         addEntryForm.reset();
         // Pre-fill dates sensibly
         const today = new Date();
@@ -481,6 +490,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         entryExpiryDate.value = nextYear.toISOString().split('T')[0];
         addEntryModal.style.display = 'flex';
     });
+
+    // Open modal in Edit mode for an existing history entry
+    window.editHistoryEntry = function(memberId, idx) {
+        const item = memberships.find(m => m.id === memberId);
+        if (!item || !item.invoiceHistory || !item.invoiceHistory[idx]) return;
+        const entry = item.invoiceHistory[idx];
+
+        editEntryIndex = idx;
+        editEntryIndexInput.value = idx;
+        addEntryModalTitle.textContent = 'Edit History Entry';
+        addEntryForm.reset();
+
+        entryInvoiceNo.value = entry.invoiceNo || '';
+        entryDate.value = entry.date || '';
+        entryExpiryDate.value = entry.expiryDate || '';
+        entryAmount.value = entry.amount || '';
+        // Note: existing PDF is kept unless user uploads a new one
+        addEntryModal.style.display = 'flex';
+    };
 
     function closeAddEntryModal() {
         addEntryModal.style.display = 'none';
@@ -494,11 +522,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const item = memberships.find(m => m.id === currentDetailId);
         if (!item) return;
 
-        if (!item.invoiceHistory) {
-            item.invoiceHistory = [];
-        }
+        if (!item.invoiceHistory) item.invoiceHistory = [];
 
-        const newEntry = {
+        const updatedEntry = {
             invoiceNo: entryInvoiceNo.value || '-',
             date: entryDate.value,
             expiryDate: entryExpiryDate.value,
@@ -506,6 +532,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         const file = entryPdfFile.files[0];
+
+        const finalize = (entry) => {
+            if (editEntryIndex >= 0) {
+                // Preserve existing PDF if no new file chosen
+                if (!file) {
+                    entry.pdfData = item.invoiceHistory[editEntryIndex].pdfData;
+                    entry.pdfName = item.invoiceHistory[editEntryIndex].pdfName;
+                }
+                item.invoiceHistory[editEntryIndex] = entry;
+            } else {
+                item.invoiceHistory.push(entry);
+            }
+            saveData(item);
+            showDetailView(currentDetailId);
+            closeAddEntryModal();
+        };
+
         if (file) {
             if (file.type !== 'application/pdf') {
                 alert('Please select a valid PDF file.');
@@ -515,23 +558,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 alert('PDF file size must be less than 5MB.');
                 return;
             }
-            
             const reader = new FileReader();
             reader.onload = function(evt) {
-                newEntry.pdfData = evt.target.result;
-                newEntry.pdfName = file.name;
-                
-                item.invoiceHistory.push(newEntry);
-                saveData(item);
-                showDetailView(currentDetailId); 
-                closeAddEntryModal();
+                updatedEntry.pdfData = evt.target.result;
+                updatedEntry.pdfName = file.name;
+                finalize(updatedEntry);
             };
             reader.readAsDataURL(file);
         } else {
-            item.invoiceHistory.push(newEntry);
-            saveData(item);
-            showDetailView(currentDetailId);
-            closeAddEntryModal();
+            finalize(updatedEntry);
         }
     });
 
@@ -602,6 +637,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // Membership Status Handling
+    const replaceRefundDocBtn = document.getElementById('replaceRefundDocBtn');
+
     function updateRefundUI(item) {
         if (item.membershipStatus === 'Cancelled' && item.depositToggle === 'Yes' && item.depositAmount > 0) {
             if (item.refundStatus === 'Initiated') {
@@ -627,6 +664,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             refundInitiatedMsg.style.display = 'none';
         }
     }
+
+    // "Replace" button resets refund so upload form reappears
+    replaceRefundDocBtn.addEventListener('click', () => {
+        const item = memberships.find(m => m.id === currentDetailId);
+        if (item) {
+            delete item.refundStatus;
+            delete item.refundDocData;
+            delete item.refundDocName;
+            saveData(item);
+            updateRefundUI(item);
+        }
+    });
 
     detailMembershipStatus.addEventListener('change', (e) => {
         const item = memberships.find(m => m.id === currentDetailId);

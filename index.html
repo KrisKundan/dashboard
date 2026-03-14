@@ -271,6 +271,7 @@
                             <span style="font-size:0.8rem; color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" id="refundDocName"></span>
                         </div>
                         <a id="refundDocDownload" href="#" download style="font-size:0.75rem; white-space:nowrap;" class="btn btn-outline btn-sm">Download Doc</a>
+                        <button id="replaceRefundDocBtn" class="btn btn-outline btn-sm" style="white-space:nowrap; font-size:0.75rem;">Replace</button>
                     </div>
                 </div>
 
@@ -311,12 +312,13 @@
     <div id="addEntryModal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
-                <h3>Add History Entry</h3>
+                <h3 id="addEntryModalTitle">Add History Entry</h3>
                 <button class="icon-button" id="closeAddEntryBtn" aria-label="Close">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
             <form id="addEntryForm" style="padding: var(--spacing-lg);">
+                <input type="hidden" id="editEntryIndex" value="-1">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="entryInvoiceNo">Invoice No.</label>
