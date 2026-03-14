@@ -422,10 +422,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Populate Subscription Record Table
         const invoiceTableBody = document.getElementById('invoiceTableBody');
         const detailTotalHistoryAmount = document.getElementById('detailTotalHistoryAmount');
-        const history = item.invoiceHistory || [
-            // If legacy data, create a single row from the primary record
-            { invoiceNo: item.invoiceNo || '-', date: item.date, expiryDate: item.expiryDate, amount: item.amount }
-        ];
+        const history = item.invoiceHistory || [];
 
         let totalAmountPaid = 0;
 
