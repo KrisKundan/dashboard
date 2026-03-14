@@ -585,6 +585,44 @@ button {
   animation: fadeIn 0.3s ease-in;
 }
 
+.drawer-filters {
+  display: flex;
+  gap: 6px;
+  padding: 10px var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  flex-wrap: wrap;
+}
+
+.drawer-filter-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.drawer-filter-btn:hover {
+  border-color: var(--primary-btn-bg);
+  color: var(--primary-btn-bg);
+}
+
+.drawer-filter-btn.active {
+  background-color: var(--primary-btn-bg);
+  border-color: var(--primary-btn-bg);
+  color: #ffffff;
+}
+
+.notification-item--expired {
+  border-left-color: var(--danger-color) !important;
+}
+
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }

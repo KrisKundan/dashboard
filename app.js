@@ -914,38 +914,84 @@ document.addEventListener('DOMContentLoaded', async () => {
     const drawerOverlay = document.getElementById('drawerOverlay');
     const closeDrawerBtn = document.getElementById('closeDrawerBtn');
     const drawerContent = document.getElementById('drawerContent');
+    const drawerFilterBtns = document.querySelectorAll('.drawer-filter-btn');
 
-    function updateNotifications() {
-        // Calculate latest status dynamically for all memberships before filtering for notifications.
-        memberships.forEach(m => {
-            m.status = getLatestSummaryStatus(m);
-        });
-        const warnings = memberships.filter(m => m.status === 'Warning' || m.status === 'Expired');
-        notificationBadge.textContent = warnings.length;
-        
-        if (warnings.length > 0) {
-            notificationBadge.style.display = 'flex';
+    let activeDrawerFilter = 'all'; // 'all' | '30' | '90' | 'expired'
+
+    function getDaysUntilExpiry(expiryDateStr) {
+        if (!expiryDateStr) return -Infinity;
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const exp = new Date(expiryDateStr);
+        exp.setHours(0, 0, 0, 0);
+        return Math.ceil((exp - now) / (1000 * 3600 * 24));
+    }
+
+    function updateNotifications(filter = activeDrawerFilter) {
+        // Recalculate status for all memberships
+        memberships.forEach(m => { m.status = getLatestSummaryStatus(m); });
+
+        // Badge always counts Warning + Expired regardless of filter
+        const alerting = memberships.filter(m => m.status === 'Warning' || m.status === 'Expired');
+        notificationBadge.textContent = alerting.length;
+        notificationBadge.style.display = alerting.length > 0 ? 'flex' : 'none';
+
+        // Apply the active drawer filter
+        let filtered;
+        if (filter === 'expired') {
+            filtered = memberships.filter(m => getDaysUntilExpiry(m.expiryDate) < 0);
+        } else if (filter === '30') {
+            filtered = memberships.filter(m => {
+                const days = getDaysUntilExpiry(m.expiryDate);
+                return days >= 0 && days <= 30;
+            });
+        } else if (filter === '90') {
+            filtered = memberships.filter(m => {
+                const days = getDaysUntilExpiry(m.expiryDate);
+                return days >= 0 && days <= 90;
+            });
         } else {
-            notificationBadge.style.display = 'none';
+            // 'all' — show Warning + Expired
+            filtered = alerting;
         }
 
         drawerContent.innerHTML = '';
-        if (warnings.length === 0) {
-            drawerContent.innerHTML = '<p style="color: var(--text-secondary);">No new notifications.</p>';
+        if (filtered.length === 0) {
+            drawerContent.innerHTML = `<p style="color: var(--text-secondary); text-align:center; padding: 24px 0;">No subscriptions match this filter.</p>`;
             return;
         }
 
-        warnings.forEach(item => {
+        filtered.forEach(item => {
+            const days = getDaysUntilExpiry(item.expiryDate);
+            const isExpired = days < 0;
+            const daysLabel = isExpired
+                ? `Expired ${Math.abs(days)} day${Math.abs(days) !== 1 ? 's' : ''} ago`
+                : `Expires in ${days} day${days !== 1 ? 's' : ''}`;
+
             const el = document.createElement('div');
-            el.className = 'notification-item';
+            el.className = 'notification-item' + (isExpired ? ' notification-item--expired' : '');
             el.innerHTML = `
-                <h4>${item.name} (${item.id})</h4>
-                <p>Status: ${item.status}. Subscription is ${item.status === 'Warning' ? 'expiring soon' : 'already expired'}.</p>
-                <button class="btn btn-outline btn-sm" style="margin-top: 10px; width: 100%" onclick="viewMembership('${item.id}'); toggleDrawer(true);">View Details</button>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                    <h4 style="flex:1;">${item.name}</h4>
+                    <span class="badge ${getBadgeClass(item.status)}">${item.status}</span>
+                </div>
+                <p style="margin-top:4px; font-size:0.75rem; color: var(--text-secondary);">${item.id} &nbsp;·&nbsp; ${daysLabel}</p>
+                <p style="margin-top:2px; font-size:0.75rem; color: var(--text-secondary);">Expiry: ${formatDate(item.expiryDate)}</p>
+                <button class="btn btn-outline btn-sm" style="margin-top:10px; width:100%;" onclick="viewMembership('${item.id}'); toggleDrawer(true);">View Details →</button>
             `;
             drawerContent.appendChild(el);
         });
     }
+
+    // Wire up drawer filter buttons
+    drawerFilterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            drawerFilterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeDrawerFilter = btn.dataset.days;
+            updateNotifications(activeDrawerFilter);
+        });
+    });
 
     function toggleDrawer(forceClose = false) {
         if (forceClose || notificationDrawer.classList.contains('open')) {
@@ -954,7 +1000,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             notificationDrawer.classList.add('open');
             drawerOverlay.style.display = 'block';
-            updateNotifications();
+            updateNotifications(activeDrawerFilter);
         }
     }
 
