@@ -15,9 +15,10 @@
     <div id="loginOverlay" class="login-overlay">
         <div class="login-card">
             <div class="login-header">
-                <img src="https://library.iitgn.ac.in/images/lib_logo1.png" alt="IITGN Library Logo" style="height: 48px; margin-bottom: 20px;">
-                <h2>Membership Portal</h2>
-                <p>Please sign in to continue</p>
+                <img src="https://library.iitgn.ac.in/images/lib_logo1.png" alt="IITGN Library Logo" style="height: 60px; margin-bottom: 16px;">
+                <p style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-secondary); margin-bottom: 4px;">Indian Institute of Technology Gandhinagar</p>
+                <h2 style="font-size: 1.35rem;">Central Library Portal</h2>
+                <p>Please sign in with your credentials to continue</p>
             </div>
             <form id="loginForm" class="login-form">
                 <div class="form-group">
@@ -37,8 +38,12 @@
     <!-- Main Application Container (Hidden initially) -->
     <div id="appContainer" style="display: none;">
         <nav class="navbar">
-        <div class="navbar-brand">
+        <div class="navbar-brand" style="display:flex; align-items:center; gap: 12px;">
             <img src="https://library.iitgn.ac.in/images/lib_logo1.png" alt="IITGN Library Logo" style="height: 48px;">
+            <div style="border-left: 2px solid var(--primary-btn-bg); padding-left: 12px; line-height: 1.25;">
+                <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em;">IIT Gandhinagar</div>
+                <div style="font-size: 1rem; font-weight: 700; color: var(--primary-color);">Central Library</div>
+            </div>
         </div>
         <div class="navbar-actions">
             <!-- Social Links -->
@@ -72,8 +77,8 @@
     </nav>
     <main class="main-content">
         <header class="page-header">
-            <h2>IITGN Membership Dashboard</h2>
-            <p>Manage and monitor all library subscriptions and members</p>
+            <h2>Library Membership Portal</h2>
+            <p>Indian Institute of Technology Gandhinagar &nbsp;·&nbsp; Central Library — Membership Management System</p>
         </header>
 
         <!-- Stats Cards -->

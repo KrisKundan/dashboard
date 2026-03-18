@@ -1,71 +1,77 @@
-/* CSS Variables for Light / Dark Mode - Professional Navy Theme */
+/* CSS Variables for Light / Dark Mode - IIT Gandhinagar Library Theme */
 :root {
   /* Colors - Light Theme */
-  --bg-color: #f1f5f9;
+  --bg-color: #f8f5f2;
   --card-bg: #ffffff;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --border-color: #cbd5e1;
+  --text-primary: #1a0a00;
+  --text-secondary: #6b4f3a;
+  --border-color: #e0d3c8;
   
-  /* Brand Colors - Corporate Navy & Indigo */
-  --primary-color: #1e3a8a; /* Deep Navy */
-  --primary-btn-bg: #3730a3; /* Indigo */
+  /* Brand Colors - IITGN Terracotta & Cerulean */
+  --primary-color: #c0533e; /* Deep Terracotta */
+  --primary-btn-bg: #E46F61; /* IITGN Terracotta */
   --primary-btn-text: #ffffff;
-  --primary-btn-hover: #312e81; /* Dark Indigo */
+  --primary-btn-hover: #c0533e; /* Darker Terracotta */
 
-  --accent-blue: #0ea5e9; /* Light blue accent */
+  --accent-color: #079BD8; /* IITGN Cerulean */
   
   --nav-bg: #ffffff;
-  --nav-border: #e2e8f0;
+  --nav-border: #e0d3c8;
 
   --badge-active-bg: #dcfce7;
   --badge-active-text: #166534;
   --badge-expired-bg: #fee2e2;
   --badge-expired-text: #991b1b;
-  --badge-org-bg: #e0e7ff;
-  --badge-org-text: #3730a3;
-  --badge-ind-bg: #f8fafc;
-  --badge-ind-text: #334155;
+  --badge-org-bg: #fde8e5;
+  --badge-org-text: #c0533e;
+  --badge-ind-bg: #e6f5fd;
+  --badge-ind-text: #06639b;
   --badge-warning-bg: #ffedd5;
   --badge-warning-text: #9a3412;
 
+  --success-color: #166534;
   --danger-color: #b91c1c;
 
   /* Spacing & Sizes */
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
-  --border-radius: 6px; /* Slightly sharper corners for professional look */
+  --border-radius: 6px;
   --max-width: 1200px;
 }
 
 body.dark-mode {
   /* Colors - Dark Theme */
-  --bg-color: #0f172a; /* Slate 900 */
-  --card-bg: #1e293b; /* Slate 800 */
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --border-color: #334155;
+  --bg-color: #1a1008; /* Deep Warm Black */
+  --card-bg: #2c1c10; /* Dark Warm Brown */
+  --text-primary: #fdf4ef;
+  --text-secondary: #c4a98f;
+  --border-color: #4a3020;
   
   /* Brand Colors (Dark adjusted) */
-  --primary-color: #60a5fa; /* Blue 400 for dark mode accents */
-  --primary-btn-bg: #4f46e5; /* Indigo 600 */
+  --primary-color: #f49080; /* Light Terracotta for dark mode */
+  --primary-btn-bg: #d45f52; /* Slightly muted Terracotta */
   --primary-btn-text: #ffffff;
-  --primary-btn-hover: #4338ca; /* Indigo 700 */
+  --primary-btn-hover: #c0533e;
   
-  --nav-bg: #1e293b;
-  --nav-border: #334155;
+  --accent-color: #38b6f0; /* Lighter Cerulean for dark mode */
+  
+  --nav-bg: #2c1c10;
+  --nav-border: #4a3020;
 
   --badge-active-bg: #064e3b;
   --badge-active-text: #34d399;
   --badge-expired-bg: #7f1d1d;
   --badge-expired-text: #f87171;
-  --badge-org-bg: #312e81; /* Dark Indigo bg */
-  --badge-org-text: #a5b4fc; /* Light Indigo text */
-  --badge-ind-bg: #334155;
-  --badge-ind-text: #cbd5e1;
+  --badge-org-bg: #4a1c14;
+  --badge-org-text: #f49080;
+  --badge-ind-bg: #0c3047;
+  --badge-ind-text: #7dd3f8;
   --badge-warning-bg: #7c2d12;
   --badge-warning-text: #fb923c;
+
+  --success-color: #34d399;
+  --danger-color: #f87171;
 }
 
 /* Global Reset */
