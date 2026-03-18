@@ -245,13 +245,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const statActive = document.getElementById('statActive');
     const statExpired = document.getElementById('statExpired');
     const statTotal = document.getElementById('statTotal');
-    
-    // Analytics Elements
-    const analyticsDaysInput = document.getElementById('analyticsDaysInput');
-    const analyticsNewSubs = document.getElementById('analyticsNewSubs');
-    const analyticsCancelledSubs = document.getElementById('analyticsCancelledSubs');
-    const analyticsMembershipFee = document.getElementById('analyticsMembershipFee');
-    const analyticsAdmissionFee = document.getElementById('analyticsAdmissionFee');
 
     const searchInput = document.getElementById('searchInput');
     const filterBtns = document.querySelectorAll('.filter-btn');
@@ -305,45 +298,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const addSubBtn = document.getElementById('addSubscriptionBtn');
 
     // --- 4. Core Logic Functions ---
-    function updateAnalytics() {
-        if (!analyticsDaysInput) return;
-        const days = parseInt(analyticsDaysInput.value) || 30;
-        const now = new Date();
-        now.setHours(23, 59, 59, 999);
-        
-        const cutoffDate = new Date(now);
-        cutoffDate.setDate(now.getDate() - days);
-        cutoffDate.setHours(0, 0, 0, 0);
 
-        let newSubs = 0;
-        let cancelledSubs = 0;
-        let totalMemFee = 0;
-        let totalAdmFee = 0;
-
-        memberships.forEach(m => {
-            const subDate = m.date ? new Date(m.date) : new Date(0);
-            subDate.setHours(0, 0, 0, 0);
-            
-            if (subDate >= cutoffDate && subDate <= now) {
-                newSubs++;
-                totalMemFee += parseFloat(m.amount) || 0;
-                totalAdmFee += parseFloat(m.admissionFee) || 0;
-            }
-
-            if (m.membershipStatus === 'Cancelled') {
-                const cancelDate = m.cancelledDate ? new Date(m.cancelledDate) : subDate;
-                cancelDate.setHours(0, 0, 0, 0);
-                if (cancelDate >= cutoffDate && cancelDate <= now) {
-                    cancelledSubs++;
-                }
-            }
-        });
-
-        analyticsNewSubs.textContent = newSubs;
-        analyticsCancelledSubs.textContent = cancelledSubs;
-        analyticsMembershipFee.textContent = formatCurrency(totalMemFee);
-        analyticsAdmissionFee.textContent = formatCurrency(totalAdmFee);
-    }
 
     function updateStats() {
         // Recompute the latest status for all items to be safe so the top level displays correct counts
@@ -354,8 +309,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         statActive.textContent = activeCount;
         statExpired.textContent = expiredCount;
         statTotal.textContent = memberships.length;
-        
-        updateAnalytics();
     }
 
     function formatCurrency(amount) {
@@ -810,11 +763,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // --- 6. Event Listeners & Modal CRUD ---
-    if (analyticsDaysInput) {
-        analyticsDaysInput.addEventListener('input', updateAnalytics);
-        analyticsDaysInput.addEventListener('change', updateAnalytics);
-    }
-
     searchInput.addEventListener('input', (e) => {
         searchQuery = e.target.value.toLowerCase();
         currentPage = 1;
