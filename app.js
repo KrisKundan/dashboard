@@ -390,8 +390,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="item-amount">${formatCurrency(item.amount)}</div>
                 <span class="badge ${getBadgeClass(item.type)}">${item.type === 'Organisation' ? 'Org' : 'Ind'}</span>
                 <span class="badge ${getBadgeClass(calculatedStatus)}">${calculatedStatus}</span>
-                <button class="btn btn-outline btn-sm" onclick="editMembership('${item.id}')">Edit</button>
-                <button class="btn btn-primary" onclick="viewMembership('${item.id}')">View More →</button>
+                <div style="display:flex; gap:8px; margin-left:auto;">
+                    <button class="btn btn-outline btn-sm" onclick="editMembership('${item.id}')">Edit</button>
+                    <button class="btn btn-outline btn-sm" style="border-color: var(--danger-color); color: var(--danger-color);" onclick="deleteSubscription('${item.id}')">Delete</button>
+                    <button class="btn btn-primary" onclick="viewMembership('${item.id}')">View More →</button>
+                </div>
             `;
             membershipListEl.appendChild(listEl);
         });
@@ -629,6 +632,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.viewMembership = function(id) {
         showDetailView(id);
+    };
+
+    window.deleteSubscription = async function(id) {
+        if (confirm('Are you sure you want to completely delete this subscription?')) {
+            try {
+                // Remove from local array
+                memberships = memberships.filter(m => m.id !== id);
+                
+                // Remove from Firestore
+                const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js");
+                await deleteDoc(doc(db, "memberships", id));
+                
+                // Update UI visually immediately without waiting for snapshot
+                updateStats();
+                updateNotifications();
+                renderList();
+            } catch (error) {
+                console.error("Error deleting document: ", error);
+                alert("Failed to delete the subscription. Please try again.");
+            }
+        }
     };
 
     detailEditBtn.addEventListener('click', () => {
