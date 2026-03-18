@@ -1,4 +1,13 @@
-document.addEventListener('DOMContentLoaded', () => {
+import { collection, getDocs, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // Ensure Firebase is initialized
+    if (!window.db) {
+        console.error("Firebase not initialized in window.db");
+        return;
+    }
+    const db = window.db;
+    const membershipsCollection = collection(db, "memberships");
     // 1. Theme Toggling Logic
     const themeToggleBtn = document.getElementById('themeToggle');
     const moonIcon = document.getElementById('moonIcon');
@@ -64,13 +73,68 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     ];
 
-    // Initialize from localStorage or use defaults
-    const savedData = localStorage.getItem('membershipData');
-    let memberships = savedData ? JSON.parse(savedData) : defaultMemberships;
+    // Initialize from Firestore
+    let memberships = [];
 
-    function saveData() {
-        localStorage.setItem('membershipData', JSON.stringify(memberships));
+    async function loadData() {
+        try {
+            const querySnapshot = await getDocs(membershipsCollection);
+            const loaded = [];
+            querySnapshot.forEach((doc) => {
+                loaded.push(doc.data());
+            });
+            memberships = loaded.length > 0 ? loaded : defaultMemberships;
+            
+            // If we loaded default data because Firestore is empty, save it
+            if (loaded.length === 0) {
+                memberships.forEach(m => saveData(m));
+            }
+            
+            updateStats();
+            updateNotifications();
+            renderList();
+            
+            // Re-render detail view if one is active
+            if (currentDetailId) {
+                showDetailView(currentDetailId);
+            }
+        } catch (error) {
+            console.error("Error loading documents: ", error);
+        }
     }
+
+    async function saveData(itemToSave = null) {
+        try {
+            if (itemToSave) {
+                // Save a specific item
+                await setDoc(doc(db, "memberships", itemToSave.id), itemToSave);
+            } else {
+                // Save all if no specific item was passed (legacy support)
+                for (const m of memberships) {
+                    await setDoc(doc(db, "memberships", m.id), m);
+                }
+            }
+        } catch (error) {
+            console.error("Error saving document: ", error);
+        }
+    }
+
+    // Set up real-time listener
+    onSnapshot(membershipsCollection, (snapshot) => {
+        const loaded = [];
+        snapshot.forEach((doc) => {
+            loaded.push(doc.data());
+        });
+        if (loaded.length > 0) {
+            memberships = loaded;
+            updateStats();
+            updateNotifications();
+            renderList();
+            if (currentDetailId) {
+                showDetailView(currentDetailId);
+            }
+        }
+    });
 
     let currentFilter = 'All';
     let searchQuery = '';
@@ -132,8 +196,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const detailMembershipStatus = document.getElementById('detailMembershipStatus');
     const refundProcessSection = document.getElementById('refundProcessSection');
     const refundDepositAmount = document.getElementById('refundDepositAmount');
-    const initiateRefundBtn = document.getElementById('initiateRefundBtn');
+    const uploadRefundDocBtn = document.getElementById('uploadRefundDocBtn');
+    const refundDocFile = document.getElementById('refundDocFile');
+    const refundFileError = document.getElementById('refundFileError');
     const refundInitiatedMsg = document.getElementById('refundInitiatedMsg');
+    const refundDocName = document.getElementById('refundDocName');
+    const refundDocDownload = document.getElementById('refundDocDownload');
 
     // Stats & Filters
     const statActive = document.getElementById('statActive');
@@ -152,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Form inputs
     const subIdInput = document.getElementById('subId');
+    const subMemberIdInput = document.getElementById('subMemberId');
     const subNameInput = document.getElementById('subName');
     const subAmountInput = document.getElementById('subAmount');
     const subDateInput = document.getElementById('subDate');
@@ -407,10 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Populate Subscription Record Table
         const invoiceTableBody = document.getElementById('invoiceTableBody');
         const detailTotalHistoryAmount = document.getElementById('detailTotalHistoryAmount');
-        const history = item.invoiceHistory || [
-            // If legacy data, create a single row from the primary record
-            { invoiceNo: item.invoiceNo || '-', date: item.date, expiryDate: item.expiryDate, amount: item.amount }
-        ];
+        const history = item.invoiceHistory || [];
 
         let totalAmountPaid = 0;
 
@@ -431,7 +497,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td><span class="badge ${getBadgeClass(entryStatus)}">${entryStatus}</span></td>
                     <td>
                         ${entry.pdfData ? `<a href="${entry.pdfData}" download="${entry.pdfName || 'invoice.pdf'}" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 0.75rem;">Download PDF</a>` : '-'}
-                    <td>
+                    </td>
+                    <td style="display:flex; gap:4px;">
+                        <button class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 0.75rem;" onclick="editHistoryEntry('${item.id}', ${idx})">Edit</button>
                         <button class="btn btn-outline btn-sm" style="border-color: var(--danger-color); color: var(--danger-color); padding: 2px 8px; font-size: 0.75rem;" onclick="deleteHistoryEntry('${item.id}', ${idx})">Delete</button>
                     </td>
                 `;
@@ -445,6 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Add History Entry Modal Logic ---
     const addEntryModal = document.getElementById('addEntryModal');
+    const addEntryModalTitle = document.getElementById('addEntryModalTitle');
     const addEntryForm = document.getElementById('addEntryForm');
     const closeAddEntryBtn = document.getElementById('closeAddEntryBtn');
     const cancelAddEntryBtn = document.getElementById('cancelAddEntryBtn');
@@ -453,9 +522,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const entryExpiryDate = document.getElementById('entryExpiryDate');
     const entryAmount = document.getElementById('entryAmount');
     const entryPdfFile = document.getElementById('entryPdfFile');
+    const editEntryIndexInput = document.getElementById('editEntryIndex');
 
-    // "Add Entry" button opens the modal
+    let editEntryIndex = -1; // -1 = adding new, >= 0 = editing existing
+
+    // "Add Entry" button opens the modal in Add mode
     document.getElementById('editInvoiceBtn').addEventListener('click', () => {
+        editEntryIndex = -1;
+        editEntryIndexInput.value = -1;
+        addEntryModalTitle.textContent = 'Add History Entry';
         addEntryForm.reset();
         // Pre-fill dates sensibly
         const today = new Date();
@@ -465,6 +540,25 @@ document.addEventListener('DOMContentLoaded', () => {
         entryExpiryDate.value = nextYear.toISOString().split('T')[0];
         addEntryModal.style.display = 'flex';
     });
+
+    // Open modal in Edit mode for an existing history entry
+    window.editHistoryEntry = function(memberId, idx) {
+        const item = memberships.find(m => m.id === memberId);
+        if (!item || !item.invoiceHistory || !item.invoiceHistory[idx]) return;
+        const entry = item.invoiceHistory[idx];
+
+        editEntryIndex = idx;
+        editEntryIndexInput.value = idx;
+        addEntryModalTitle.textContent = 'Edit History Entry';
+        addEntryForm.reset();
+
+        entryInvoiceNo.value = entry.invoiceNo || '';
+        entryDate.value = entry.date || '';
+        entryExpiryDate.value = entry.expiryDate || '';
+        entryAmount.value = entry.amount || '';
+        // Note: existing PDF is kept unless user uploads a new one
+        addEntryModal.style.display = 'flex';
+    };
 
     function closeAddEntryModal() {
         addEntryModal.style.display = 'none';
@@ -478,11 +572,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const item = memberships.find(m => m.id === currentDetailId);
         if (!item) return;
 
-        if (!item.invoiceHistory) {
-            item.invoiceHistory = [];
-        }
+        if (!item.invoiceHistory) item.invoiceHistory = [];
 
-        const newEntry = {
+        const updatedEntry = {
             invoiceNo: entryInvoiceNo.value || '-',
             date: entryDate.value,
             expiryDate: entryExpiryDate.value,
@@ -490,6 +582,23 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const file = entryPdfFile.files[0];
+
+        const finalize = (entry) => {
+            if (editEntryIndex >= 0) {
+                // Preserve existing PDF if no new file chosen
+                if (!file) {
+                    entry.pdfData = item.invoiceHistory[editEntryIndex].pdfData;
+                    entry.pdfName = item.invoiceHistory[editEntryIndex].pdfName;
+                }
+                item.invoiceHistory[editEntryIndex] = entry;
+            } else {
+                item.invoiceHistory.push(entry);
+            }
+            saveData(item);
+            showDetailView(currentDetailId);
+            closeAddEntryModal();
+        };
+
         if (file) {
             if (file.type !== 'application/pdf') {
                 alert('Please select a valid PDF file.');
@@ -499,23 +608,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('PDF file size must be less than 5MB.');
                 return;
             }
-            
             const reader = new FileReader();
             reader.onload = function(evt) {
-                newEntry.pdfData = evt.target.result;
-                newEntry.pdfName = file.name;
-                
-                item.invoiceHistory.push(newEntry);
-                saveData();
-                showDetailView(currentDetailId); 
-                closeAddEntryModal();
+                updatedEntry.pdfData = evt.target.result;
+                updatedEntry.pdfName = file.name;
+                finalize(updatedEntry);
             };
             reader.readAsDataURL(file);
         } else {
-            item.invoiceHistory.push(newEntry);
-            saveData();
-            showDetailView(currentDetailId);
-            closeAddEntryModal();
+            finalize(updatedEntry);
         }
     });
 
@@ -577,7 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
                      item.status = getLatestSummaryStatus(item);
                 }
                 
-                saveData();
+                saveData(item);
                 showDetailView(memberId); // Refresh the view
                 updateStats(); // Update dashboard counts
                 renderList();
@@ -586,21 +687,46 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Membership Status Handling
+    const replaceRefundDocBtn = document.getElementById('replaceRefundDocBtn');
+
     function updateRefundUI(item) {
         if (item.membershipStatus === 'Cancelled' && item.depositToggle === 'Yes' && item.depositAmount > 0) {
             if (item.refundStatus === 'Initiated') {
                 refundProcessSection.style.display = 'none';
                 refundInitiatedMsg.style.display = 'block';
+                refundDocName.textContent = item.refundDocName ? `· ${item.refundDocName}` : '';
+                if (item.refundDocData) {
+                    refundDocDownload.href = item.refundDocData;
+                    refundDocDownload.download = item.refundDocName || 'refund-document';
+                    refundDocDownload.style.display = 'inline-flex';
+                } else {
+                    refundDocDownload.style.display = 'none';
+                }
             } else {
                 refundProcessSection.style.display = 'block';
                 refundInitiatedMsg.style.display = 'none';
                 refundDepositAmount.textContent = formatCurrency(item.depositAmount);
+                refundFileError.style.display = 'none';
+                refundDocFile.value = '';
             }
         } else {
             refundProcessSection.style.display = 'none';
             refundInitiatedMsg.style.display = 'none';
         }
     }
+
+    // "Replace" button resets refund so upload form reappears
+    replaceRefundDocBtn.addEventListener('click', () => {
+        const item = memberships.find(m => m.id === currentDetailId);
+        if (item) {
+            delete item.refundStatus;
+            delete item.refundDocData;
+            delete item.refundDocName;
+            saveData(item);
+            updateRefundUI(item);
+            updateStats();
+        }
+    });
 
     detailMembershipStatus.addEventListener('change', (e) => {
         const item = memberships.find(m => m.id === currentDetailId);
@@ -611,19 +737,38 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 delete item.cancelledDate;
             }
-            saveData();
+            saveData(item);
             updateRefundUI(item);
-            updateStats();
         }
     });
 
-    initiateRefundBtn.addEventListener('click', () => {
-        const item = memberships.find(m => m.id === currentDetailId);
-        if (item) {
-            item.refundStatus = 'Initiated';
-            saveData();
-            updateRefundUI(item);
+    uploadRefundDocBtn.addEventListener('click', () => {
+        const file = refundDocFile.files[0];
+        refundFileError.style.display = 'none';
+
+        if (!file) {
+            refundFileError.textContent = 'Please select a document to upload.';
+            refundFileError.style.display = 'block';
+            return;
         }
+        if (file.size > 5 * 1024 * 1024) {
+            refundFileError.textContent = 'File size must be less than 5MB.';
+            refundFileError.style.display = 'block';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const item = memberships.find(m => m.id === currentDetailId);
+            if (item) {
+                item.refundStatus = 'Initiated';
+                item.refundDocData = evt.target.result;
+                item.refundDocName = file.name;
+                saveData(item);
+                updateRefundUI(item);
+            }
+        };
+        reader.readAsDataURL(file);
     });
 
     // --- 6. Event Listeners & Modal CRUD ---
@@ -673,6 +818,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (item) {
                 // Populate basic fields first as Type affects other sections
                 subIdInput.value = item.id;
+                subMemberIdInput.value = item.memberId || item.id;
                 subNameInput.value = item.name;
                 subAmountInput.value = item.amount;
                 subDateInput.value = item.date;
@@ -724,7 +870,8 @@ document.addEventListener('DOMContentLoaded', () => {
             modalTitle.textContent = 'Add Subscription';
             subForm.reset();
             subIdInput.value = '';
-            
+            subMemberIdInput.value = '';
+
             subDateInput.value = new Date().toISOString().split('T')[0];
             // Setup default expiry to 1 year
             const nextYear = new Date();
@@ -826,6 +973,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
 
         const id = subIdInput.value;
+        const inputMemberId = subMemberIdInput.value.trim();
         const name = subNameInput.value;
         const amount = parseFloat(subAmountInput.value);
         const date = subDateInput.value;
@@ -887,20 +1035,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 showDetailView(id);
             }
         } else {
-            // Add
-            // Use provided memberId, otherwise fallback to random generation
-            const finalId = memberId || ('M-' + Math.floor(1000 + Math.random() * 9000));
-            memberships.unshift({ 
-                id: finalId, memberId: finalId, name, amount, date, type, status: calculatedStatus, phone, email, address, gstin, 
+            // Add — use the Membership ID the user typed in the form
+            if (!inputMemberId) {
+                alert('Please enter a Membership ID.');
+                return;
+            }
+            if (memberships.find(m => m.id === inputMemberId)) {
+                alert(`Membership ID "${inputMemberId}" already exists. Please use a unique ID.`);
+                return;
+            }
+            const newItem = { 
+                id: inputMemberId, memberId: inputMemberId, name, amount, date, type, status: calculatedStatus, phone, email, address, gstin, 
                 invoiceNo, expiryDate, invoiceDetails, category, subCategory, admissionFee, 
                 depositToggle, depositAmount, authName, authPhone, authEmail 
-            });
+            };
+            memberships.unshift(newItem);
+            saveData(newItem);
         }
 
-        saveData();
+        // We don't strictly need to call renderList here because onSnapshot will trigger it,
+        // but closeModal gives immediate UI feedback.
         closeModal();
-        updateStats();
-        renderList();
     });
 
     // --- 7. Notification Drawer Logic ---
@@ -910,38 +1065,84 @@ document.addEventListener('DOMContentLoaded', () => {
     const drawerOverlay = document.getElementById('drawerOverlay');
     const closeDrawerBtn = document.getElementById('closeDrawerBtn');
     const drawerContent = document.getElementById('drawerContent');
+    const drawerFilterBtns = document.querySelectorAll('.drawer-filter-btn');
 
-    function updateNotifications() {
-        // Calculate latest status dynamically for all memberships before filtering for notifications.
-        memberships.forEach(m => {
-            m.status = getLatestSummaryStatus(m);
-        });
-        const warnings = memberships.filter(m => m.status === 'Warning' || m.status === 'Expired');
-        notificationBadge.textContent = warnings.length;
-        
-        if (warnings.length > 0) {
-            notificationBadge.style.display = 'flex';
+    let activeDrawerFilter = 'all'; // 'all' | '30' | '90' | 'expired'
+
+    function getDaysUntilExpiry(expiryDateStr) {
+        if (!expiryDateStr) return -Infinity;
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const exp = new Date(expiryDateStr);
+        exp.setHours(0, 0, 0, 0);
+        return Math.ceil((exp - now) / (1000 * 3600 * 24));
+    }
+
+    function updateNotifications(filter = activeDrawerFilter) {
+        // Recalculate status for all memberships
+        memberships.forEach(m => { m.status = getLatestSummaryStatus(m); });
+
+        // Badge always counts Warning + Expired regardless of filter
+        const alerting = memberships.filter(m => m.status === 'Warning' || m.status === 'Expired');
+        notificationBadge.textContent = alerting.length;
+        notificationBadge.style.display = alerting.length > 0 ? 'flex' : 'none';
+
+        // Apply the active drawer filter
+        let filtered;
+        if (filter === 'expired') {
+            filtered = memberships.filter(m => getDaysUntilExpiry(m.expiryDate) < 0);
+        } else if (filter === '30') {
+            filtered = memberships.filter(m => {
+                const days = getDaysUntilExpiry(m.expiryDate);
+                return days >= 0 && days <= 30;
+            });
+        } else if (filter === '90') {
+            filtered = memberships.filter(m => {
+                const days = getDaysUntilExpiry(m.expiryDate);
+                return days >= 0 && days <= 90;
+            });
         } else {
-            notificationBadge.style.display = 'none';
+            // 'all' — show Warning + Expired
+            filtered = alerting;
         }
 
         drawerContent.innerHTML = '';
-        if (warnings.length === 0) {
-            drawerContent.innerHTML = '<p style="color: var(--text-secondary);">No new notifications.</p>';
+        if (filtered.length === 0) {
+            drawerContent.innerHTML = `<p style="color: var(--text-secondary); text-align:center; padding: 24px 0;">No subscriptions match this filter.</p>`;
             return;
         }
 
-        warnings.forEach(item => {
+        filtered.forEach(item => {
+            const days = getDaysUntilExpiry(item.expiryDate);
+            const isExpired = days < 0;
+            const daysLabel = isExpired
+                ? `Expired ${Math.abs(days)} day${Math.abs(days) !== 1 ? 's' : ''} ago`
+                : `Expires in ${days} day${days !== 1 ? 's' : ''}`;
+
             const el = document.createElement('div');
-            el.className = 'notification-item';
+            el.className = 'notification-item' + (isExpired ? ' notification-item--expired' : '');
             el.innerHTML = `
-                <h4>${item.name} (${item.id})</h4>
-                <p>Status: ${item.status}. Subscription is ${item.status === 'Warning' ? 'expiring soon' : 'already expired'}.</p>
-                <button class="btn btn-outline btn-sm" style="margin-top: 10px; width: 100%" onclick="viewMembership('${item.id}'); toggleDrawer(true);">View Details</button>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                    <h4 style="flex:1;">${item.name}</h4>
+                    <span class="badge ${getBadgeClass(item.status)}">${item.status}</span>
+                </div>
+                <p style="margin-top:4px; font-size:0.75rem; color: var(--text-secondary);">${item.id} &nbsp;·&nbsp; ${daysLabel}</p>
+                <p style="margin-top:2px; font-size:0.75rem; color: var(--text-secondary);">Expiry: ${formatDate(item.expiryDate)}</p>
+                <button class="btn btn-outline btn-sm" style="margin-top:10px; width:100%;" onclick="viewMembership('${item.id}'); toggleDrawer(true);">View Details →</button>
             `;
             drawerContent.appendChild(el);
         });
     }
+
+    // Wire up drawer filter buttons
+    drawerFilterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            drawerFilterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeDrawerFilter = btn.dataset.days;
+            updateNotifications(activeDrawerFilter);
+        });
+    });
 
     function toggleDrawer(forceClose = false) {
         if (forceClose || notificationDrawer.classList.contains('open')) {
@@ -950,7 +1151,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             notificationDrawer.classList.add('open');
             drawerOverlay.style.display = 'block';
-            updateNotifications();
+            updateNotifications(activeDrawerFilter);
         }
     }
 
@@ -958,9 +1159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     closeDrawerBtn.addEventListener('click', () => toggleDrawer(true));
     drawerOverlay.addEventListener('click', () => toggleDrawer(true));
 
-    // Update Initial Render to include notifications
     // --- 8. Initial Render ---
-    updateStats();
-    updateNotifications();
-    renderList();
+    // Start the loading process
+    loadData();
 });
