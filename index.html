@@ -11,7 +11,32 @@
     <link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body class="light-mode">
-    <nav class="navbar">
+    <!-- Login Overlay -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-card">
+            <div class="login-header">
+                <img src="https://library.iitgn.ac.in/images/lib_logo1.png" alt="IITGN Library Logo" style="height: 48px; margin-bottom: 20px;">
+                <h2>Membership Portal</h2>
+                <p>Please sign in to continue</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="loginId">User ID</label>
+                    <input type="text" id="loginId" placeholder="Enter your ID" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                </div>
+                <div id="loginError" class="login-error" style="display: none;">Invalid ID or password.</div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Sign In</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application Container (Hidden initially) -->
+    <div id="appContainer" style="display: none;">
+        <nav class="navbar">
         <div class="navbar-brand">
             <img src="https://library.iitgn.ac.in/images/lib_logo1.png" alt="IITGN Library Logo" style="height: 48px;">
         </div>
@@ -591,6 +616,7 @@
         </div>
     </div>
 
+    </div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";

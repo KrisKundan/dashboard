@@ -1,6 +1,44 @@
 import { collection, getDocs, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // --- 0. Login Logic ---
+    const loginOverlay = document.getElementById('loginOverlay');
+    const appContainer = document.getElementById('appContainer');
+    const loginForm = document.getElementById('loginForm');
+    const loginIdInput = document.getElementById('loginId');
+    const loginPasswordInput = document.getElementById('loginPassword');
+    const loginError = document.getElementById('loginError');
+
+    // Hardcoded credentials
+    const VALID_ID = 'admin';
+    const VALID_PASS = 'admin123';
+
+    // Check if already logged in
+    if (sessionStorage.getItem('isLoggedIn') === 'true') {
+        loginOverlay.style.display = 'none';
+        appContainer.style.display = 'block';
+    } else {
+        loginOverlay.style.display = 'flex';
+        appContainer.style.display = 'none';
+    }
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = loginIdInput.value.trim();
+            const pass = loginPasswordInput.value.trim();
+
+            if (id === VALID_ID && pass === VALID_PASS) {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                loginOverlay.style.display = 'none';
+                appContainer.style.display = 'block';
+                loginError.style.display = 'none';
+            } else {
+                loginError.style.display = 'block';
+            }
+        });
+    }
+
     // Ensure Firebase is initialized
     if (!window.db) {
         console.error("Firebase not initialized in window.db");
