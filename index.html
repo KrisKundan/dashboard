@@ -106,6 +106,26 @@
             </div>
         </section>
 
+        <!-- Advanced Filters -->
+        <section id="advancedFiltersBar" style="margin-bottom: 12px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Filter by:</span>
+            <select id="filterStatus" style="padding: 6px 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius); background: var(--card-bg); color: var(--text-primary); font-family: inherit; font-size: 0.875rem;">
+                <option value="All">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Warning">Warning</option>
+                <option value="Expired">Expired</option>
+            </select>
+            <select id="filterCategory" style="padding: 6px 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius); background: var(--card-bg); color: var(--text-primary); font-family: inherit; font-size: 0.875rem;">
+                <option value="All">All Categories</option>
+                <option value="Corporate">Corporate</option>
+                <option value="Individual">Individual</option>
+                <option value="Government">Government</option>
+                <option value="Educational">Educational</option>
+                <option value="NGO / Trust">NGO / Trust</option>
+            </select>
+            <button id="clearFiltersBtn" class="btn btn-outline btn-sm" style="font-size: 0.8rem; height: 33px;">✕ Clear Filters</button>
+        </section>
+
         <!-- Action Area (New Features) -->
         <section class="page-actions" style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
              <button id="addSubscriptionBtn" class="btn btn-primary">
@@ -326,6 +346,17 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            <!-- Notes / Remarks Section -->
+            <div class="detail-section-card mt-lg">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
+                    <h3 style="margin-bottom: 0;">INTERNAL NOTES / REMARKS</h3>
+                    <button class="btn btn-primary btn-sm" id="saveNotesBtn" style="height: 32px;">Save Notes</button>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px;">Add internal staff remarks, follow-up notes, or any other relevant information about this member.</p>
+                <textarea id="memberNotesInput" rows="4" placeholder="Type your notes here..." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius); background-color: var(--bg-color); color: var(--text-primary); font-family: inherit; font-size: 0.875rem; resize: vertical; outline: none;"></textarea>
+                <p id="notesSavedMsg" style="display: none; margin-top: 6px; font-size: 0.8rem; color: var(--success-color); font-weight: 500;">✓ Notes saved successfully.</p>
             </div>
 
             <div class="detail-actions mt-lg" style="display: flex; justify-content: flex-end; gap: var(--spacing-md);">

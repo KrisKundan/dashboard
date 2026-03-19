@@ -176,6 +176,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let currentFilter = 'All';
     let searchQuery = '';
+    let filterStatus = 'All';
+    let filterCategory = 'All';
     const itemsPerPage = 5;
     let currentPage = 1;
 
@@ -192,6 +194,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const resultsTextEl = document.getElementById('resultsText');
     const membershipListEl = document.getElementById('membershipList');
     const paginationSection = document.getElementById('paginationSection');
+    const advancedFiltersBar = document.getElementById('advancedFiltersBar');
+    const filterStatusEl = document.getElementById('filterStatus');
+    const filterCategoryEl = document.getElementById('filterCategory');
+    const clearFiltersBtn = document.getElementById('clearFiltersBtn');
 
     // Detail View Elements
     const backToDashboardBtn = document.getElementById('backToDashboardBtn');
@@ -364,7 +370,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const matchesSearch = m.name.toLowerCase().includes(searchQuery) || 
                                   m.id.toLowerCase().includes(searchQuery);
             const matchesFilter = currentFilter === 'All' || m.type === currentFilter;
-            return matchesSearch && matchesFilter;
+            const calculatedStatus = calculateStatus(m.expiryDate);
+            const matchesStatus = filterStatus === 'All' || calculatedStatus === filterStatus;
+            const matchesCategory = filterCategory === 'All' || (m.category || '') === filterCategory;
+            return matchesSearch && matchesFilter && matchesStatus && matchesCategory;
         });
 
         resultsTextEl.textContent = `${filtered.length} subscriptions found`;
@@ -415,6 +424,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         resultsTextEl.style.display = 'none';
         membershipListEl.style.display = 'none';
         paginationSection.style.display = 'none';
+        advancedFiltersBar.style.display = 'none';
 
         // Show Detail View
         detailViewSection.style.display = 'block';
@@ -502,6 +512,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         detailTotalHistoryAmount.textContent = formatCurrency(totalAmountPaid);
+
+        // Load notes
+        const memberNotesInput = document.getElementById('memberNotesInput');
+        const notesSavedMsg = document.getElementById('notesSavedMsg');
+        memberNotesInput.value = item.notes || '';
+        notesSavedMsg.style.display = 'none';
 
     }
 
@@ -787,6 +803,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // --- 6. Event Listeners & Modal CRUD ---
+
+    // Advanced Filters
+    filterStatusEl.addEventListener('change', (e) => {
+        filterStatus = e.target.value;
+        currentPage = 1;
+        renderList();
+    });
+
+    filterCategoryEl.addEventListener('change', (e) => {
+        filterCategory = e.target.value;
+        currentPage = 1;
+        renderList();
+    });
+
+    clearFiltersBtn.addEventListener('click', () => {
+        filterStatus = 'All';
+        filterCategory = 'All';
+        filterStatusEl.value = 'All';
+        filterCategoryEl.value = 'All';
+        currentPage = 1;
+        renderList();
+    });
+
+    // Notes / Remarks
+    const memberNotesInput = document.getElementById('memberNotesInput');
+    const saveNotesBtn = document.getElementById('saveNotesBtn');
+    const notesSavedMsg = document.getElementById('notesSavedMsg');
+
+    saveNotesBtn.addEventListener('click', () => {
+        const item = memberships.find(m => m.id === currentDetailId);
+        if (item) {
+            item.notes = memberNotesInput.value;
+            saveData(item);
+            notesSavedMsg.style.display = 'block';
+            setTimeout(() => { notesSavedMsg.style.display = 'none'; }, 3000);
+        }
+    });
+
     searchInput.addEventListener('input', (e) => {
         searchQuery = e.target.value.toLowerCase();
         currentPage = 1;
