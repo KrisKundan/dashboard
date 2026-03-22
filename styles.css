@@ -929,7 +929,7 @@ button {
 
 .analytics-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-md);
 }
 @media (max-width: 1024px) { .analytics-kpi-grid { grid-template-columns: repeat(3, 1fr); } }
@@ -979,6 +979,7 @@ button {
 }
 
 .analytics-kpi-blue   .kpi-icon { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
+.analytics-kpi-purple .kpi-icon { background: linear-gradient(135deg, #7e22ce, #a855f7); }
 .analytics-kpi-indigo .kpi-icon { background: linear-gradient(135deg, #3730a3, #6366f1); }
 .analytics-kpi-green  .kpi-icon { background: linear-gradient(135deg, #064e3b, #16a34a); }
 .analytics-kpi-red    .kpi-icon { background: linear-gradient(135deg, #7f1d1d, #dc2626); }

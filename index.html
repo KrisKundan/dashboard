@@ -88,9 +88,18 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
                     Analytics Overview
                 </div>
-                <button class="btn btn-outline btn-sm" id="closeAnalyticsBtn" style="color: #fff; border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.1);">
-                    ← Back to Dashboard
-                </button>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <select id="analyticsTimeFilter" class="form-control" style="background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 4px 10px; font-size: 0.8rem; cursor: pointer; outline: none;">
+                        <option value="all" style="color: #000;">All Time</option>
+                        <option value="7" style="color: #000;">Last 7 Days</option>
+                        <option value="30" style="color: #000;">Last 30 Days</option>
+                        <option value="90" style="color: #000;">Last 90 Days</option>
+                        <option value="365" style="color: #000;">Last 12 Months</option>
+                    </select>
+                    <button class="btn btn-outline btn-sm" id="closeAnalyticsBtn" style="color: #fff; border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.1);">
+                        ← Back to Dashboard
+                    </button>
+                </div>
             </div>
 
             <div class="analytics-overview-body" id="analyticsOverviewBody">
@@ -101,8 +110,17 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                         </div>
                         <div class="kpi-body">
-                            <p class="kpi-label">Total Revenue (All Time)</p>
+                            <p class="kpi-label" id="kpiLabelRevenue">Total Revenue (All Time)</p>
                             <p class="kpi-value" id="kpiTotalRevenue">₹0</p>
+                        </div>
+                    </div>
+                    <div class="analytics-kpi-card analytics-kpi-purple">
+                        <div class="kpi-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                        </div>
+                        <div class="kpi-body">
+                            <p class="kpi-label" id="kpiLabelNewSubs">New Subscriptions (All Time)</p>
+                            <p class="kpi-value" id="kpiNewSubscriptions">0</p>
                         </div>
                     </div>
                     <div class="analytics-kpi-card analytics-kpi-indigo">

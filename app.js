@@ -828,14 +828,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderAnalytics() {
+        if (memberships.length === 0) return;
         const colors = getChartColors();
+
+        const timeFilterEl = document.getElementById('analyticsTimeFilter');
+        const filterValue = timeFilterEl ? timeFilterEl.value : 'all';
+        
+        let cutoffDate = null;
+        const now = new Date();
+        if (filterValue !== 'all') {
+            cutoffDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - parseInt(filterValue));
+            cutoffDate.setHours(0,0,0,0);
+        }
+
+        const parseDateString = dStr => {
+            if (!dStr) return new Date(0);
+            const pts = dStr.split('-');
+            return new Date(pts[0], pts[1] - 1, pts[2]);
+        };
 
         // ---- KPI Cards ----
         const totalRevenue = memberships.reduce((sum, m) => {
-            const histTotal = (m.invoiceHistory || []).reduce((s, e) => s + (e.amount || 0), 0);
+            const histTotal = (m.invoiceHistory || []).reduce((s, e) => {
+                const edate = parseDateString(e.date);
+                if (cutoffDate && edate < cutoffDate) return s;
+                return s + (e.amount || 0);
+            }, 0);
             return sum + histTotal;
         }, 0);
+
+        const newSubs = memberships.filter(m => {
+            if (!cutoffDate) return true;
+            return parseDateString(m.date) >= cutoffDate;
+        }).length;
+
         document.getElementById('kpiTotalRevenue').textContent = formatCurrency(totalRevenue);
+        document.getElementById('kpiNewSubscriptions').textContent = newSubs;
         document.getElementById('kpiTotalMembers').textContent = memberships.length;
 
         const activeCount = memberships.filter(m => {
@@ -850,27 +878,54 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('kpiExpiredMembers').textContent = expiredCount;
         document.getElementById('kpiCancellationRate').textContent = cancellationRate + '%';
 
-        // ---- Monthly Revenue Bar Chart ----
-        const now = new Date();
-        const monthLabels = [];
-        const monthRevenue = {};
-        for (let i = 11; i >= 0; i--) {
-            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-            const label = d.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
-            monthLabels.push(label);
-            monthRevenue[key] = 0;
+        const kpiLabelRevenue = document.getElementById('kpiLabelRevenue');
+        const kpiLabelNewSubs = document.getElementById('kpiLabelNewSubs');
+        if (kpiLabelRevenue && kpiLabelNewSubs) {
+            let periodText = 'All Time';
+            if (filterValue === '7') periodText = 'Last 7 Days';
+            else if (filterValue === '30') periodText = 'Last 30 Days';
+            else if (filterValue === '90') periodText = 'Last 90 Days';
+            else if (filterValue === '365') periodText = 'Last 12 Months';
+            kpiLabelRevenue.textContent = `Total Revenue (${periodText})`;
+            kpiLabelNewSubs.textContent = `New Subscriptions (${periodText})`;
         }
+
+        // ---- Revenue Trend Bar Chart (Dynamic Daily/Monthly) ----
+        let timeLabels = [];
+        let revenueData = {};
+        let isDaily = filterValue === '7' || filterValue === '30';
+        
+        if (isDaily) {
+            const days = parseInt(filterValue);
+            for (let i = days - 1; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                const label = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+                timeLabels.push({ key, label });
+                revenueData[key] = 0;
+            }
+        } else {
+            const months = filterValue === '90' ? 3 : 12;
+            for (let i = months - 1; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                const label = d.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
+                timeLabels.push({ key, label });
+                revenueData[key] = 0;
+            }
+        }
+
         memberships.forEach(m => {
             (m.invoiceHistory || []).forEach(entry => {
                 if (!entry.date) return;
-                const key = entry.date.substring(0, 7);
-                if (key in monthRevenue) {
-                    monthRevenue[key] += entry.amount || 0;
+                const key = isDaily ? entry.date : entry.date.substring(0, 7);
+                if (key in revenueData) {
+                    revenueData[key] += entry.amount || 0;
                 }
             });
         });
-        const monthRevenueValues = Object.values(monthRevenue);
+        const revenueChartLabels = timeLabels.map(t => t.label);
+        const revenueChartValues = timeLabels.map(t => revenueData[t.key]);
 
         destroyChart('monthlyRevenue');
         const ctxRev = document.getElementById('chartMonthlyRevenue');
@@ -878,10 +933,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             chartInstances['monthlyRevenue'] = new Chart(ctxRev, {
                 type: 'bar',
                 data: {
-                    labels: monthLabels,
+                    labels: revenueChartLabels,
                     datasets: [{
                         label: 'Revenue (₹)',
-                        data: monthRevenueValues,
+                        data: revenueChartValues,
                         backgroundColor: 'rgba(55, 48, 163, 0.75)',
                         borderRadius: 5,
                         borderSkipped: false,
@@ -916,9 +971,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
+        // --- Breakdown Charts (Filtered by created date if cutoffDate is set) ---
+        const filteredMemberships = cutoffDate ? memberships.filter(m => parseDateString(m.date) >= cutoffDate) : memberships;
+        
         // ---- Member Type Doughnut ----
-        const orgCount = memberships.filter(m => m.type === 'Organisation').length;
-        const indCount = memberships.filter(m => m.type === 'Individual').length;
+        const orgCount = filteredMemberships.filter(m => m.type === 'Organisation').length;
+        const indCount = filteredMemberships.filter(m => m.type === 'Individual').length;
 
         destroyChart('memberType');
         const ctxType = document.getElementById('chartMemberType');
@@ -954,7 +1012,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // ---- Category Horizontal Bar Chart ----
         const categories = ['Corporate', 'Academic', 'Alumni', 'Other'];
-        const catCounts = categories.map(cat => memberships.filter(m => m.category === cat).length);
+        const catCounts = categories.map(cat => filteredMemberships.filter(m => m.category === cat).length);
         const catColors = ['rgba(55,48,163,0.8)', 'rgba(14,165,233,0.8)', 'rgba(22,163,74,0.8)', 'rgba(245,158,11,0.8)'];
 
         destroyChart('category');
@@ -1034,10 +1092,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // --- Analytics Page Navigation ---
+    // --- Analytics Page Navigation & Filters ---
     const navAnalyticsBtn = document.getElementById('navAnalyticsBtn');
     const closeAnalyticsBtn = document.getElementById('closeAnalyticsBtn');
     const analyticsOverview = document.getElementById('analyticsOverview');
+    const analyticsTimeFilter = document.getElementById('analyticsTimeFilter');
+    
+    if (analyticsTimeFilter) {
+        analyticsTimeFilter.addEventListener('change', () => {
+            renderAnalytics();
+        });
+    }
 
     if (navAnalyticsBtn && closeAnalyticsBtn && analyticsOverview) {
         navAnalyticsBtn.addEventListener('click', () => {
