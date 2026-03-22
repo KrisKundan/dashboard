@@ -429,6 +429,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         resultsTextEl.style.display = 'none';
         membershipListEl.style.display = 'none';
         paginationSection.style.display = 'none';
+        
         const analyticsOverview = document.getElementById('analyticsOverview');
         if (analyticsOverview) analyticsOverview.style.display = 'none';
 
@@ -648,9 +649,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         resultsTextEl.style.display = 'block';
         membershipListEl.style.display = 'flex';
         paginationSection.style.display = 'flex';
-
-        const analyticsOverview = document.getElementById('analyticsOverview');
-        if (analyticsOverview) analyticsOverview.style.display = 'block';
     }
 
     backToDashboardBtn.addEventListener('click', hideDetailView);
@@ -1036,19 +1034,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Analytics Toggle (collapse/expand)
-    const analyticsToggleBtn = document.getElementById('analyticsToggleBtn');
-    const analyticsOverviewBody = document.getElementById('analyticsOverviewBody');
-    const analyticsChevron = document.getElementById('analyticsChevron');
-    const analyticsToggleLabel = document.getElementById('analyticsToggleLabel');
-    let analyticsCollapsed = false;
+    // --- Analytics Page Navigation ---
+    const navAnalyticsBtn = document.getElementById('navAnalyticsBtn');
+    const closeAnalyticsBtn = document.getElementById('closeAnalyticsBtn');
+    const analyticsOverview = document.getElementById('analyticsOverview');
 
-    if (analyticsToggleBtn) {
-        analyticsToggleBtn.addEventListener('click', () => {
-            analyticsCollapsed = !analyticsCollapsed;
-            analyticsOverviewBody.style.display = analyticsCollapsed ? 'none' : 'block';
-            analyticsChevron.style.transform = analyticsCollapsed ? 'rotate(180deg)' : 'rotate(0deg)';
-            analyticsToggleLabel.textContent = analyticsCollapsed ? 'Expand' : 'Collapse';
+    if (navAnalyticsBtn && closeAnalyticsBtn && analyticsOverview) {
+        navAnalyticsBtn.addEventListener('click', () => {
+            // Hide Dashboard Elements & Detail View
+            pageHeader.style.display = 'none';
+            statsGrid.style.display = 'none';
+            actionsBar.style.display = 'none';
+            pageActions.style.display = 'none';
+            resultsTextEl.style.display = 'none';
+            membershipListEl.style.display = 'none';
+            paginationSection.style.display = 'none';
+            detailViewSection.style.display = 'none';
+            
+            // Show Analytics Overview Page
+            analyticsOverview.style.display = 'block';
+            
+            // Re-render to ensure charts size correctly
+            renderAnalytics();
+        });
+
+        closeAnalyticsBtn.addEventListener('click', () => {
+            // Hide Analytics Overview Page
+            analyticsOverview.style.display = 'none';
+            
+            // Show Dashboard Elements
+            pageHeader.style.display = 'block';
+            statsGrid.style.display = 'grid';
+            actionsBar.style.display = 'flex';
+            pageActions.style.display = 'flex';
+            resultsTextEl.style.display = 'block';
+            membershipListEl.style.display = 'flex';
+            paginationSection.style.display = 'flex';
+            
+            // Re-render list if needed
+            renderList();
         });
     }
 
