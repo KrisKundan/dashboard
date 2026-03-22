@@ -1,5 +1,15 @@
 import { collection, getDocs, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
+// Chart.js instances — kept at module scope so we can destroy and recreate on re-render
+const chartInstances = {};
+
+function destroyChart(key) {
+    if (chartInstances[key]) {
+        chartInstances[key].destroy();
+        delete chartInstances[key];
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     // --- 0. Login Logic ---
     const loginOverlay = document.getElementById('loginOverlay');
@@ -85,6 +95,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             moonIcon.style.display = 'none';
             sunIcon.style.display = 'block';
         }
+        // Re-render charts to pick up new theme colors
+        renderAnalytics();
     });
 
     // --- 2. State & Mock Data ---
@@ -131,6 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateStats();
             updateNotifications();
             renderList();
+            renderAnalytics();
             
             // Re-render detail view if one is active
             if (currentDetailId) {
@@ -168,6 +181,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateStats();
             updateNotifications();
             renderList();
+            renderAnalytics();
             if (currentDetailId) {
                 showDetailView(currentDetailId);
             }
@@ -415,6 +429,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         resultsTextEl.style.display = 'none';
         membershipListEl.style.display = 'none';
         paginationSection.style.display = 'none';
+        const analyticsOverview = document.getElementById('analyticsOverview');
+        if (analyticsOverview) analyticsOverview.style.display = 'none';
 
         // Show Detail View
         detailViewSection.style.display = 'block';
@@ -632,6 +648,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         resultsTextEl.style.display = 'block';
         membershipListEl.style.display = 'flex';
         paginationSection.style.display = 'flex';
+
+        const analyticsOverview = document.getElementById('analyticsOverview');
+        if (analyticsOverview) analyticsOverview.style.display = 'block';
     }
 
     backToDashboardBtn.addEventListener('click', hideDetailView);
@@ -798,6 +817,240 @@ document.addEventListener('DOMContentLoaded', async () => {
     const memberNotesInput = document.getElementById('memberNotesInput');
     const saveNotesBtn = document.getElementById('saveNotesBtn');
     const notesSavedMsg = document.getElementById('notesSavedMsg');
+
+    // --- Analytics Overview ---
+    function getChartColors() {
+        const isDark = document.body.classList.contains('dark-mode');
+        return {
+            textPrimary: isDark ? '#f8fafc' : '#0f172a',
+            textSecondary: isDark ? '#94a3b8' : '#475569',
+            gridColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+            cardBg: isDark ? '#1e293b' : '#ffffff',
+        };
+    }
+
+    function renderAnalytics() {
+        const colors = getChartColors();
+
+        // ---- KPI Cards ----
+        const totalRevenue = memberships.reduce((sum, m) => {
+            const histTotal = (m.invoiceHistory || []).reduce((s, e) => s + (e.amount || 0), 0);
+            return sum + histTotal;
+        }, 0);
+        document.getElementById('kpiTotalRevenue').textContent = formatCurrency(totalRevenue);
+        document.getElementById('kpiTotalMembers').textContent = memberships.length;
+
+        const activeCount = memberships.filter(m => {
+            const s = calculateStatus(m.expiryDate);
+            return s === 'Active' || s === 'Warning';
+        }).length;
+        const expiredCount = memberships.filter(m => calculateStatus(m.expiryDate) === 'Expired').length;
+        const cancelledCount = memberships.filter(m => m.membershipStatus === 'Cancelled').length;
+        const cancellationRate = memberships.length > 0 ? Math.round((cancelledCount / memberships.length) * 100) : 0;
+
+        document.getElementById('kpiActiveMembers').textContent = activeCount;
+        document.getElementById('kpiExpiredMembers').textContent = expiredCount;
+        document.getElementById('kpiCancellationRate').textContent = cancellationRate + '%';
+
+        // ---- Monthly Revenue Bar Chart ----
+        const now = new Date();
+        const monthLabels = [];
+        const monthRevenue = {};
+        for (let i = 11; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            const label = d.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
+            monthLabels.push(label);
+            monthRevenue[key] = 0;
+        }
+        memberships.forEach(m => {
+            (m.invoiceHistory || []).forEach(entry => {
+                if (!entry.date) return;
+                const key = entry.date.substring(0, 7);
+                if (key in monthRevenue) {
+                    monthRevenue[key] += entry.amount || 0;
+                }
+            });
+        });
+        const monthRevenueValues = Object.values(monthRevenue);
+
+        destroyChart('monthlyRevenue');
+        const ctxRev = document.getElementById('chartMonthlyRevenue');
+        if (ctxRev) {
+            chartInstances['monthlyRevenue'] = new Chart(ctxRev, {
+                type: 'bar',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: monthRevenueValues,
+                        backgroundColor: 'rgba(55, 48, 163, 0.75)',
+                        borderRadius: 5,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ' ₹' + ctx.parsed.y.toLocaleString('en-IN')
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: colors.textSecondary, font: { size: 11 } },
+                            grid: { color: colors.gridColor }
+                        },
+                        y: {
+                            ticks: {
+                                color: colors.textSecondary,
+                                font: { size: 11 },
+                                callback: val => '₹' + (val >= 100000 ? (val/100000).toFixed(1) + 'L' : val.toLocaleString('en-IN'))
+                            },
+                            grid: { color: colors.gridColor }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ---- Member Type Doughnut ----
+        const orgCount = memberships.filter(m => m.type === 'Organisation').length;
+        const indCount = memberships.filter(m => m.type === 'Individual').length;
+
+        destroyChart('memberType');
+        const ctxType = document.getElementById('chartMemberType');
+        if (ctxType) {
+            chartInstances['memberType'] = new Chart(ctxType, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Organisation', 'Individual'],
+                    datasets: [{
+                        data: [orgCount, indCount],
+                        backgroundColor: ['#3730a3', '#0ea5e9'],
+                        borderWidth: 0,
+                        hoverOffset: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: colors.textPrimary, padding: 14, font: { size: 12 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ` ${ctx.label}: ${ctx.parsed}`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ---- Category Horizontal Bar Chart ----
+        const categories = ['Corporate', 'Academic', 'Alumni', 'Other'];
+        const catCounts = categories.map(cat => memberships.filter(m => m.category === cat).length);
+        const catColors = ['rgba(55,48,163,0.8)', 'rgba(14,165,233,0.8)', 'rgba(22,163,74,0.8)', 'rgba(245,158,11,0.8)'];
+
+        destroyChart('category');
+        const ctxCat = document.getElementById('chartCategory');
+        if (ctxCat) {
+            chartInstances['category'] = new Chart(ctxCat, {
+                type: 'bar',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        label: 'Members',
+                        data: catCounts,
+                        backgroundColor: catColors,
+                        borderRadius: 5,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ` ${ctx.parsed.x} member${ctx.parsed.x !== 1 ? 's' : ''}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: colors.textSecondary, font: { size: 11 }, precision: 0 },
+                            grid: { color: colors.gridColor }
+                        },
+                        y: {
+                            ticks: { color: colors.textSecondary, font: { size: 12 } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ---- Status Doughnut ----
+        const warnCount = memberships.filter(m => calculateStatus(m.expiryDate) === 'Warning').length;
+
+        destroyChart('status');
+        const ctxStatus = document.getElementById('chartStatus');
+        if (ctxStatus) {
+            chartInstances['status'] = new Chart(ctxStatus, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Active', 'Warning', 'Expired'],
+                    datasets: [{
+                        data: [activeCount - warnCount, warnCount, expiredCount],
+                        backgroundColor: ['#16a34a', '#f59e0b', '#dc2626'],
+                        borderWidth: 0,
+                        hoverOffset: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: colors.textPrimary, padding: 12, font: { size: 12 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ` ${ctx.label}: ${ctx.parsed}`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Analytics Toggle (collapse/expand)
+    const analyticsToggleBtn = document.getElementById('analyticsToggleBtn');
+    const analyticsOverviewBody = document.getElementById('analyticsOverviewBody');
+    const analyticsChevron = document.getElementById('analyticsChevron');
+    const analyticsToggleLabel = document.getElementById('analyticsToggleLabel');
+    let analyticsCollapsed = false;
+
+    if (analyticsToggleBtn) {
+        analyticsToggleBtn.addEventListener('click', () => {
+            analyticsCollapsed = !analyticsCollapsed;
+            analyticsOverviewBody.style.display = analyticsCollapsed ? 'none' : 'block';
+            analyticsChevron.style.transform = analyticsCollapsed ? 'rotate(180deg)' : 'rotate(0deg)';
+            analyticsToggleLabel.textContent = analyticsCollapsed ? 'Expand' : 'Collapse';
+        });
+    }
 
     saveNotesBtn.addEventListener('click', () => {
         const item = memberships.find(m => m.id === currentDetailId);
