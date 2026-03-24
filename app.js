@@ -897,14 +897,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         // ---- KPI Cards ----
         let membershipRevenue = 0;
         let admissionRevenue = 0;
+        let depositRevenue = 0;
 
         memberships.forEach(m => {
             const mStartDate = parseDateString(m.date);
             const isStartWithinCutoff = !cutoffDate || mStartDate >= cutoffDate;
 
-            // Admission Fee calculation
+            // Admission & Deposit Fee calculation
             if (isStartWithinCutoff) {
                 admissionRevenue += (parseFloat(m.admissionFee) || 0);
+                if (m.depositToggle === 'Yes' && m.depositAmount) {
+                    depositRevenue += (parseFloat(m.depositAmount) || 0);
+                }
             }
 
             // Membership Fee calculation
@@ -924,7 +928,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             membershipRevenue += histTotal;
         });
         
-        const totalRevenue = membershipRevenue + admissionRevenue;
+        const totalRevenue = membershipRevenue + admissionRevenue + depositRevenue;
 
         const newSubs = memberships.filter(m => {
             if (!cutoffDate) return true;
@@ -934,6 +938,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('kpiTotalRevenue').textContent = formatCurrency(totalRevenue);
         document.getElementById('kpiMembershipRevenue').textContent = formatCurrency(membershipRevenue);
         document.getElementById('kpiAdmissionRevenue').textContent = formatCurrency(admissionRevenue);
+        document.getElementById('kpiDepositRevenue').textContent = formatCurrency(depositRevenue);
         document.getElementById('kpiNewSubscriptions').textContent = newSubs;
         document.getElementById('kpiTotalMembers').textContent = memberships.length;
 
