@@ -918,9 +918,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return s + (parseFloat(e.amount) || 0);
             }, 0);
             
-            // Remove deposit from membership revenue if deposit was collected within the cutoff
-            if (isStartWithinCutoff && m.depositToggle === 'Yes' && m.depositAmount) {
-                histTotal -= (parseFloat(m.depositAmount) || 0);
+            // Remove deposit and admission fee from membership revenue if collected within the cutoff
+            if (isStartWithinCutoff) {
+                if (m.depositToggle === 'Yes' && m.depositAmount) {
+                    histTotal -= (parseFloat(m.depositAmount) || 0);
+                }
+                if (m.admissionFee) {
+                    histTotal -= (parseFloat(m.admissionFee) || 0);
+                }
             }
             
             if (histTotal < 0) histTotal = 0;
