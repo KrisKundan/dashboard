@@ -899,19 +899,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         let admissionRevenue = 0;
 
         memberships.forEach(m => {
-            // Admission Fee calculation
             const mStartDate = parseDateString(m.date);
-            if (!cutoffDate || mStartDate >= cutoffDate) {
+            const isStartWithinCutoff = !cutoffDate || mStartDate >= cutoffDate;
+
+            // Admission Fee calculation
+            if (isStartWithinCutoff) {
                 admissionRevenue += (parseFloat(m.admissionFee) || 0);
             }
 
             // Membership Fee calculation
-            const histTotal = (m.invoiceHistory || []).reduce((s, e) => {
+            let histTotal = (m.invoiceHistory || []).reduce((s, e) => {
                 const edate = parseDateString(e.date);
                 if (cutoffDate && edate < cutoffDate) return s;
                 return s + (parseFloat(e.amount) || 0);
             }, 0);
             
+            // Remove deposit from membership revenue if deposit was collected within the cutoff
+            if (isStartWithinCutoff && m.depositToggle === 'Yes' && m.depositAmount) {
+                histTotal -= (parseFloat(m.depositAmount) || 0);
+            }
+            
+            if (histTotal < 0) histTotal = 0;
+
             membershipRevenue += histTotal;
         });
         
