@@ -20,8 +20,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loginError = document.getElementById('loginError');
 
     // Hardcoded credentials
-    const VALID_ID = 'admin';
-    const VALID_PASS = 'admin123';
+    const VALID_ID = 'library';
+    const VALID_PASS = 'library123';
 
     // Check if already logged in
     if (sessionStorage.getItem('isLoggedIn') === 'true') {
