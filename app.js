@@ -207,6 +207,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const membershipListEl = document.getElementById('membershipList');
     const paginationSection = document.getElementById('paginationSection');
 
+    // Pagination Elements
+    const prevPageBtn = document.getElementById('prevPageBtn');
+    const nextPageBtn = document.getElementById('nextPageBtn');
+    const pageNumbersEl = document.getElementById('pageNumbers');
+
     // Detail View Elements
     const backToDashboardBtn = document.getElementById('backToDashboardBtn');
     const detailName = document.getElementById('detailName');
@@ -412,7 +417,49 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
             membershipListEl.appendChild(listEl);
         });
+
+        renderPagination(filtered.length);
     }
+
+    function renderPagination(totalItems) {
+        const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+        
+        // Ensure currentPage is valid
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        // Button States
+        prevPageBtn.disabled = currentPage === 1;
+        nextPageBtn.disabled = currentPage === totalPages;
+
+        // Render Page Numbers
+        pageNumbersEl.innerHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.className = `btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-outline'}`;
+            btn.style.margin = '0 2px';
+            btn.textContent = i;
+            btn.addEventListener('click', () => {
+                currentPage = i;
+                renderList();
+            });
+            pageNumbersEl.appendChild(btn);
+        }
+    }
+
+    // Pagination Event Listeners
+    prevPageBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderList();
+        }
+    });
+
+    nextPageBtn.addEventListener('click', () => {
+        // Increment page; renderPagination handles the upper bound disabled state
+        currentPage++;
+        renderList();
+    });
 
     // --- 5. Detail View Logic ---
     function showDetailView(id) {
