@@ -901,45 +901,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         // ---- KPI Cards ----
+        let totalRevenue = 0;
         let membershipRevenue = 0;
         let admissionRevenue = 0;
         let depositRevenue = 0;
 
         memberships.forEach(m => {
-            const mStartDate = parseDateString(m.date);
-            const isStartWithinCutoff = (!startDate || mStartDate >= startDate) && (!endDate || mStartDate <= endDate);
-
-            // Admission & Deposit Fee calculation
-            if (isStartWithinCutoff) {
-                admissionRevenue += (parseFloat(m.admissionFee) || 0);
-                if (m.depositToggle === 'Yes' && m.depositAmount) {
-                    depositRevenue += (parseFloat(m.depositAmount) || 0);
-                }
-            }
-
-            // Membership Fee calculation
-            let histTotal = (m.invoiceHistory || []).reduce((s, e) => {
+            (m.invoiceHistory || []).forEach((e, idx) => {
                 const edate = parseDateString(e.date);
-                if ((startDate && edate < startDate) || (endDate && edate > endDate)) return s;
-                return s + (parseFloat(e.amount) || 0);
-            }, 0);
-            
-            // Remove deposit and admission fee from membership revenue if collected within the cutoff
-            if (isStartWithinCutoff) {
-                if (m.depositToggle === 'Yes' && m.depositAmount) {
-                    histTotal -= (parseFloat(m.depositAmount) || 0);
-                }
-                if (m.admissionFee) {
-                    histTotal -= (parseFloat(m.admissionFee) || 0);
-                }
-            }
-            
-            if (histTotal < 0) histTotal = 0;
+                if ((startDate && edate < startDate) || (endDate && edate > endDate)) return;
 
-            membershipRevenue += histTotal;
+                const amt = parseFloat(e.amount) || 0;
+                totalRevenue += amt;
+
+                // Identify if this is the FIRST chronological invoice
+                if (idx === 0) {
+                    const adm = parseFloat(m.admissionFee) || 0;
+                    const dep = (m.depositToggle === 'Yes') ? (parseFloat(m.depositAmount) || 0) : 0;
+                    
+                    admissionRevenue += adm;
+                    depositRevenue += dep;
+                    
+                    let mem = amt - adm - dep;
+                    if (mem < 0) mem = 0;
+                    membershipRevenue += mem;
+                } else {
+                    membershipRevenue += amt;
+                }
+            });
         });
-        
-        const totalRevenue = membershipRevenue + admissionRevenue + depositRevenue;
 
         const newSubs = memberships.filter(m => {
             const d = parseDateString(m.date);
