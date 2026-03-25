@@ -878,16 +878,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (memberships.length === 0) return;
         const colors = getChartColors();
 
-        const timeFilterEl = document.getElementById('analyticsTimeFilter');
-        const filterValue = timeFilterEl ? timeFilterEl.value : 'all';
+        const startInputEl = document.getElementById('analyticsStartDate');
+        const endInputEl = document.getElementById('analyticsEndDate');
         
-        let cutoffDate = null;
-        const now = new Date();
-        if (filterValue !== 'all') {
-            cutoffDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - parseInt(filterValue));
-            cutoffDate.setHours(0,0,0,0);
+        let startDate = null;
+        let endDate = null;
+        
+        if (startInputEl && startInputEl.value) {
+            startDate = new Date(startInputEl.value);
+            startDate.setHours(0,0,0,0);
+        }
+        if (endInputEl && endInputEl.value) {
+            endDate = new Date(endInputEl.value);
+            endDate.setHours(23,59,59,999);
         }
 
+        const now = new Date();
         const parseDateString = dStr => {
             if (!dStr) return new Date(0);
             const pts = dStr.split('-');
@@ -901,7 +907,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         memberships.forEach(m => {
             const mStartDate = parseDateString(m.date);
-            const isStartWithinCutoff = !cutoffDate || mStartDate >= cutoffDate;
+            const isStartWithinCutoff = (!startDate || mStartDate >= startDate) && (!endDate || mStartDate <= endDate);
 
             // Admission & Deposit Fee calculation
             if (isStartWithinCutoff) {
@@ -914,7 +920,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Membership Fee calculation
             let histTotal = (m.invoiceHistory || []).reduce((s, e) => {
                 const edate = parseDateString(e.date);
-                if (cutoffDate && edate < cutoffDate) return s;
+                if ((startDate && edate < startDate) || (endDate && edate > endDate)) return s;
                 return s + (parseFloat(e.amount) || 0);
             }, 0);
             
@@ -936,8 +942,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const totalRevenue = membershipRevenue + admissionRevenue + depositRevenue;
 
         const newSubs = memberships.filter(m => {
-            if (!cutoffDate) return true;
-            return parseDateString(m.date) >= cutoffDate;
+            const d = parseDateString(m.date);
+            return (!startDate || d >= startDate) && (!endDate || d <= endDate);
         }).length;
 
         document.getElementById('kpiTotalRevenue').textContent = formatCurrency(totalRevenue);
@@ -963,10 +969,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const kpiLabelNewSubs = document.getElementById('kpiLabelNewSubs');
         if (kpiLabelRevenue && kpiLabelNewSubs) {
             let periodText = 'All Time';
-            if (filterValue === '7') periodText = 'Last 7 Days';
-            else if (filterValue === '30') periodText = 'Last 30 Days';
-            else if (filterValue === '90') periodText = 'Last 90 Days';
-            else if (filterValue === '365') periodText = 'Last 12 Months';
+            if (startDate && endDate) {
+                const shortStart = startDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' });
+                const shortEnd = endDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' });
+                periodText = `${shortStart} - ${shortEnd}`;
+            } else if (startDate) {
+                periodText = `From ${startDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}`;
+            } else if (endDate) {
+                periodText = `Until ${endDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}`;
+            }
             kpiLabelRevenue.textContent = `Total Revenue (${periodText})`;
             kpiLabelNewSubs.textContent = `New Subscriptions (${periodText})`;
         }
@@ -974,36 +985,49 @@ document.addEventListener('DOMContentLoaded', async () => {
         // ---- Revenue Trend Bar Chart (Dynamic Daily/Monthly) ----
         let timeLabels = [];
         let revenueData = {};
-        let isDaily = filterValue === '7' || filterValue === '30';
+        
+        const validInvoices = [];
+        memberships.forEach(m => {
+            (m.invoiceHistory || []).forEach(e => {
+                if (!e.date) return;
+                const d = parseDateString(e.date);
+                if ((startDate && d < startDate) || (endDate && d > endDate)) return;
+                validInvoices.push(e);
+            });
+        });
+        
+        const cStart = startDate || (validInvoices.length > 0 ? validInvoices.map(i => parseDateString(i.date)).reduce((a,b)=>a<b?a:b, new Date()) : new Date(now.getFullYear()-1, now.getMonth(), 1));
+        const cEnd = endDate || (validInvoices.length > 0 ? validInvoices.map(i => parseDateString(i.date)).reduce((a,b)=>a>b?a:b, new Date()) : now);
+        
+        const daysDiff = Math.ceil((cEnd - cStart) / (1000 * 3600 * 24));
+        let isDaily = daysDiff <= 60 && daysDiff > 0;
         
         if (isDaily) {
-            const days = parseInt(filterValue);
-            for (let i = days - 1; i >= 0; i--) {
-                const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+            for (let i = 0; i <= daysDiff; i++) {
+                const d = new Date(cStart.getTime() + i * 24 * 3600 * 1000);
                 const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                 const label = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
                 timeLabels.push({ key, label });
                 revenueData[key] = 0;
             }
         } else {
-            const months = filterValue === '90' ? 3 : 12;
-            for (let i = months - 1; i >= 0; i--) {
-                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                const label = d.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
+            const mStart = new Date(cStart.getFullYear(), cStart.getMonth(), 1);
+            const mEnd = new Date(cEnd.getFullYear(), cEnd.getMonth(), 1);
+            let curr = new Date(mStart);
+            while (curr <= mEnd) {
+                const key = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}`;
+                const label = curr.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
                 timeLabels.push({ key, label });
                 revenueData[key] = 0;
+                curr.setMonth(curr.getMonth() + 1);
             }
         }
 
-        memberships.forEach(m => {
-            (m.invoiceHistory || []).forEach(entry => {
-                if (!entry.date) return;
-                const key = isDaily ? entry.date : entry.date.substring(0, 7);
-                if (key in revenueData) {
-                    revenueData[key] += entry.amount || 0;
-                }
-            });
+        validInvoices.forEach(entry => {
+            const key = isDaily ? entry.date : entry.date.substring(0, 7);
+            if (key in revenueData) {
+                revenueData[key] += entry.amount || 0;
+            }
         });
         const revenueChartLabels = timeLabels.map(t => t.label);
         const revenueChartValues = timeLabels.map(t => revenueData[t.key]);
@@ -1052,8 +1076,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // --- Breakdown Charts (Filtered by created date if cutoffDate is set) ---
-        const filteredMemberships = cutoffDate ? memberships.filter(m => parseDateString(m.date) >= cutoffDate) : memberships;
+        // --- Breakdown Charts (Filtered by created date) ---
+        const filteredMemberships = memberships.filter(m => {
+            const d = parseDateString(m.date);
+            return (!startDate || d >= startDate) && (!endDate || d <= endDate);
+        });
         
         // ---- Member Type Doughnut ----
         const orgCount = filteredMemberships.filter(m => m.type === 'Organisation').length;
@@ -1177,10 +1204,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     const navAnalyticsBtn = document.getElementById('navAnalyticsBtn');
     const closeAnalyticsBtn = document.getElementById('closeAnalyticsBtn');
     const analyticsOverview = document.getElementById('analyticsOverview');
-    const analyticsTimeFilter = document.getElementById('analyticsTimeFilter');
     
-    if (analyticsTimeFilter) {
-        analyticsTimeFilter.addEventListener('change', () => {
+    const applyAnalyticsDateBtn = document.getElementById('applyAnalyticsDateBtn');
+    const resetAnalyticsDateBtn = document.getElementById('resetAnalyticsDateBtn');
+    const startInputEl = document.getElementById('analyticsStartDate');
+    const endInputEl = document.getElementById('analyticsEndDate');
+    
+    if (applyAnalyticsDateBtn) {
+        applyAnalyticsDateBtn.addEventListener('click', () => {
+            if (startInputEl.value && endInputEl.value && new Date(startInputEl.value) > new Date(endInputEl.value)) {
+                alert('Start date cannot be after end date.');
+                return;
+            }
+            renderAnalytics();
+        });
+    }
+
+    if (resetAnalyticsDateBtn) {
+        resetAnalyticsDateBtn.addEventListener('click', () => {
+            if (startInputEl) startInputEl.value = '';
+            if (endInputEl) endInputEl.value = '';
             renderAnalytics();
         });
     }

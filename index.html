@@ -89,13 +89,15 @@
                     Analytics Overview
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center;">
-                    <select id="analyticsTimeFilter" class="form-control" style="background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 4px 10px; font-size: 0.8rem; cursor: pointer; outline: none;">
-                        <option value="all" style="color: #000;">All Time</option>
-                        <option value="7" style="color: #000;">Last 7 Days</option>
-                        <option value="30" style="color: #000;">Last 30 Days</option>
-                        <option value="90" style="color: #000;">Last 90 Days</option>
-                        <option value="365" style="color: #000;">Last 12 Months</option>
-                    </select>
+                    <div style="display: flex; gap: 8px; align-items: center; background: rgba(255,255,255,0.15); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3);">
+                        <label for="analyticsStartDate" style="color: rgba(255,255,255,0.8); font-size: 0.75rem; margin: 0;">From</label>
+                        <input type="date" id="analyticsStartDate" style="background: transparent; color: #fff; border: none; outline: none; font-size: 0.8rem; cursor: pointer; color-scheme: dark;">
+                        <span style="color: rgba(255,255,255,0.5);">|</span>
+                        <label for="analyticsEndDate" style="color: rgba(255,255,255,0.8); font-size: 0.75rem; margin: 0;">To</label>
+                        <input type="date" id="analyticsEndDate" style="background: transparent; color: #fff; border: none; outline: none; font-size: 0.8rem; cursor: pointer; color-scheme: dark;">
+                        <button id="applyAnalyticsDateBtn" style="background: rgba(255,255,255,0.2); color: #fff; border: none; border-radius: 4px; padding: 2px 8px; font-size: 0.75rem; cursor: pointer; margin-left: 4px;">Apply</button>
+                        <button id="resetAnalyticsDateBtn" style="background: transparent; color: rgba(255,255,255,0.7); border: none; padding: 2px 4px; font-size: 0.75rem; cursor: pointer; text-decoration: underline;">Reset</button>
+                    </div>
                     <button class="btn btn-outline btn-sm" id="closeAnalyticsBtn" style="color: #fff; border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.1);">
                         ← Back to Dashboard
                     </button>
