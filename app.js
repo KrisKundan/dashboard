@@ -744,8 +744,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 alert('Please select a valid PDF file.');
                 return;
             }
-            if (file.size > 5 * 1024 * 1024) {
-                alert('PDF file size must be less than 5MB.');
+            if (file.size > 700 * 1024) {
+                alert('PDF file size must be less than 700KB due to database limits.');
                 return;
             }
             const reader = new FileReader();
@@ -912,8 +912,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             refundFileError.style.display = 'block';
             return;
         }
-        if (file.size > 5 * 1024 * 1024) {
-            refundFileError.textContent = 'File size must be less than 5MB.';
+        if (file.size > 700 * 1024) {
+            refundFileError.textContent = 'File size must be less than 700KB due to database limits.';
             refundFileError.style.display = 'block';
             return;
         }
