@@ -48,6 +48,10 @@
             </div>
         </div>
         <div class="navbar-actions">
+            <!-- Change Password -->
+            <button id="navChangePasswordBtn" class="icon-button" aria-label="Change Password" title="Change Password">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+            </button>
             <!-- Theme Toggle -->
             <button id="themeToggle" class="icon-button" aria-label="Toggle Theme">
                 <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
@@ -474,6 +478,38 @@
         </section>
 
     </main>
+
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Change Password</h3>
+                <button class="icon-button" id="closeChangePasswordBtn" aria-label="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <form id="changePasswordForm" style="padding: var(--spacing-lg);">
+                <div class="form-group">
+                    <label for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" placeholder="Enter current password" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" placeholder="Enter new password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmNewPassword">Confirm New Password</label>
+                    <input type="password" id="confirmNewPassword" placeholder="Re-enter new password" required>
+                </div>
+                <div id="changePasswordError" style="display: none; color: var(--danger-color); font-size: 0.8rem; margin-top: -6px; margin-bottom: 12px;"></div>
+                <div id="changePasswordSuccess" style="display: none; color: var(--success-color); font-size: 0.8rem; margin-top: -6px; margin-bottom: 12px;">✓ Password updated successfully!</div>
+                <div class="modal-footer" style="margin-top: var(--spacing-sm);">
+                    <button type="button" class="btn btn-outline" id="cancelChangePasswordBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Add History Entry Modal -->
     <div id="addEntryModal" class="modal-overlay" style="display: none;">

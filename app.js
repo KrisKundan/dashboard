@@ -19,10 +19,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loginPasswordInput = document.getElementById('loginPassword');
     const loginError = document.getElementById('loginError');
 
-    // Hardcoded credentials
-    const VALID_ID = 'library';
-    const VALID_PASS = 'library123';
-
     // Check if already logged in
     if (sessionStorage.getItem('isLoggedIn') === 'true') {
         loginOverlay.style.display = 'none';
@@ -38,7 +34,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const id = loginIdInput.value.trim();
             const pass = loginPasswordInput.value.trim();
 
-            if (id === VALID_ID && pass === VALID_PASS) {
+            const expectedId = localStorage.getItem('adminId') || 'library';
+            const expectedPass = localStorage.getItem('adminPassword') || 'library123';
+
+            if (id === expectedId && pass === expectedPass) {
                 sessionStorage.setItem('isLoggedIn', 'true');
                 loginOverlay.style.display = 'none';
                 appContainer.style.display = 'block';
@@ -46,6 +45,83 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 loginError.style.display = 'block';
             }
+        });
+    }
+
+    // --- 0.1 Change Password Logic ---
+    const navChangePasswordBtn = document.getElementById('navChangePasswordBtn');
+    const changePasswordModal = document.getElementById('changePasswordModal');
+    const closeChangePasswordBtn = document.getElementById('closeChangePasswordBtn');
+    const cancelChangePasswordBtn = document.getElementById('cancelChangePasswordBtn');
+    const changePasswordForm = document.getElementById('changePasswordForm');
+    
+    // Inputs
+    const currentPasswordInput = document.getElementById('currentPassword');
+    const newPasswordInput = document.getElementById('newPassword');
+    const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
+    
+    // Feedback
+    const changePasswordError = document.getElementById('changePasswordError');
+    const changePasswordSuccess = document.getElementById('changePasswordSuccess');
+
+    if (navChangePasswordBtn) {
+        navChangePasswordBtn.addEventListener('click', () => {
+            changePasswordForm.reset();
+            changePasswordError.style.display = 'none';
+            changePasswordSuccess.style.display = 'none';
+            changePasswordModal.style.display = 'flex';
+        });
+    }
+
+    function closeChangePasswordModal() {
+        if (changePasswordModal) changePasswordModal.style.display = 'none';
+    }
+
+    if (closeChangePasswordBtn) closeChangePasswordBtn.addEventListener('click', closeChangePasswordModal);
+    if (cancelChangePasswordBtn) cancelChangePasswordBtn.addEventListener('click', closeChangePasswordModal);
+    
+    if (changePasswordModal) {
+        changePasswordModal.addEventListener('click', (e) => {
+            if (e.target === changePasswordModal) closeChangePasswordModal();
+        });
+    }
+
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            changePasswordError.style.display = 'none';
+            changePasswordSuccess.style.display = 'none';
+
+            const currentPass = currentPasswordInput.value.trim();
+            const newPass = newPasswordInput.value.trim();
+            const confirmPass = confirmNewPasswordInput.value.trim();
+
+            const expectedPass = localStorage.getItem('adminPassword') || 'library123';
+
+            if (currentPass !== expectedPass) {
+                changePasswordError.textContent = 'Incorrect current password.';
+                changePasswordError.style.display = 'block';
+                return;
+            }
+
+            if (newPass !== confirmPass) {
+                changePasswordError.textContent = 'New passwords do not match.';
+                changePasswordError.style.display = 'block';
+                return;
+            }
+
+            if (newPass.length < 6) {
+                changePasswordError.textContent = 'Password must be at least 6 characters.';
+                changePasswordError.style.display = 'block';
+                return;
+            }
+
+            localStorage.setItem('adminPassword', newPass);
+            changePasswordSuccess.style.display = 'block';
+            
+            setTimeout(() => {
+                closeChangePasswordModal();
+            }, 1000);
         });
     }
 
