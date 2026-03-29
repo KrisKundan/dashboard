@@ -324,6 +324,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const invoiceViewer = document.getElementById('invoiceViewer');
     const detailEditBtn = document.getElementById('detailEditBtn');
     const editInvoiceBtn = document.getElementById('editInvoiceBtn');
+    const detailSendReminderBtn = document.getElementById('detailSendReminderBtn');
     
     // Membership Status Elements
     const detailMembershipStatus = document.getElementById('detailMembershipStatus');
@@ -804,6 +805,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     detailEditBtn.addEventListener('click', () => {
         openModal(true, currentDetailId, 'personal');
     });
+
+    if (detailSendReminderBtn) {
+        detailSendReminderBtn.addEventListener('click', () => {
+            if (currentDetailId) {
+                window.sendReminderEmail(currentDetailId);
+            }
+        });
+    }
 
     function getLatestSummaryStatus(item) {
         if (item.invoiceHistory && item.invoiceHistory.length > 0) {
@@ -1642,6 +1651,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         return Math.ceil((exp - now) / (1000 * 3600 * 24));
     }
 
+    window.sendReminderEmail = function(memberId) {
+        const item = memberships.find(m => m.id === memberId);
+        if (!item) return;
+
+        let targetEmail = item.email || '';
+        if (item.type === 'Organisation' && item.authEmail && item.authEmail !== item.email) {
+            if (targetEmail) {
+                targetEmail += ',' + item.authEmail;
+            } else {
+                targetEmail = item.authEmail;
+            }
+        }
+
+        if (!targetEmail) {
+            alert('No email address found for this member.');
+            return;
+        }
+
+        const days = getDaysUntilExpiry(item.expiryDate);
+        const isExpired = days < 0;
+        
+        const subject = encodeURIComponent(`Subscription Renewal Reminder - IITGN Library`);
+        const body = encodeURIComponent(
+            `Dear ${item.authName || item.name},\n\n` +
+            `This is a friendly reminder from the IITGN Library that your membership subscription (ID: ${item.id}) ` +
+            (isExpired ? `expired on ${formatDate(item.expiryDate)}.` : `is expiring on ${formatDate(item.expiryDate)}.`) +
+            `\n\nPlease renew it at your earliest convenience to continue enjoying our library services.\n\n` +
+            `Best regards,\n` +
+            `IITGN Library Membership Desk`
+        );
+
+        window.location.href = `mailto:${targetEmail}?subject=${subject}&body=${body}`;
+    };
+
     function updateNotifications(filter = activeDrawerFilter) {
         // Recalculate status for all memberships
         memberships.forEach(m => { m.status = getLatestSummaryStatus(m); });
@@ -1692,7 +1735,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <p style="margin-top:4px; font-size:0.75rem; color: var(--text-secondary);">${item.id} &nbsp;·&nbsp; ${daysLabel}</p>
                 <p style="margin-top:2px; font-size:0.75rem; color: var(--text-secondary);">Expiry: ${formatDate(item.expiryDate)}</p>
-                <button class="btn btn-outline btn-sm" style="margin-top:10px; width:100%;" onclick="viewMembership('${item.id}'); toggleDrawer(true);">View Details →</button>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <button class="btn btn-outline btn-sm" style="flex:1;" onclick="viewMembership('${item.id}'); toggleDrawer(true);">View Details →</button>
+                    <button class="btn btn-primary btn-sm" style="flex:1;" onclick="sendReminderEmail('${item.id}')">Send Reminder</button>
+                </div>
             `;
             drawerContent.appendChild(el);
         });
