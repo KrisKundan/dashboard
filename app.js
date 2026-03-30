@@ -1602,6 +1602,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     invoiceNo, expiryDate, invoiceDetails, category, subCategory, admissionFee, 
                     depositToggle, depositAmount, memberId, authName, authPhone, authEmail 
                 };
+                saveData(memberships[index]);
             }
             // If we are currently viewing this item in Detail View, update it immediately
             if (currentDetailId === id) {
