@@ -1206,7 +1206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // ---- Category Horizontal Bar Chart ----
-        const categories = ['Corporate', 'Academic', 'Alumni', 'Other'];
+        const categories = ['Corporate', 'Academic', 'Alumni', 'Personal'];
         const catCounts = categories.map(cat => filteredMemberships.filter(m => m.category === cat).length);
         const catColors = ['rgba(55,48,163,0.8)', 'rgba(14,165,233,0.8)', 'rgba(22,163,74,0.8)', 'rgba(245,158,11,0.8)'];
 
@@ -1489,7 +1489,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (subTypeInput.value === 'Organisation') {
             subCategoryInput.innerHTML = '<option value="Corporate">Corporate</option><option value="Academic">Academic</option>';
         } else {
-            subCategoryInput.innerHTML = '<option value="Alumni">Alumni</option><option value="Other">Other</option>';
+            subCategoryInput.innerHTML = '<option value="Alumni">Alumni</option><option value="Personal">Personal</option>';
         }
     }
 
@@ -1500,7 +1500,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             subSubCategoryInput.innerHTML = '<option value="Reference">Reference</option><option value="Borrowing">Borrowing</option>';
             subSubCategoryInput.value = 'Reference'; // Default
         } else {
-            // Academic (Org) or Other (Ind)
+            // Academic (Org) or Personal (Ind)
             subSubCategoryInput.innerHTML = '<option value="Borrowing">Borrowing</option>';
             subSubCategoryInput.value = 'Borrowing';
         }
@@ -1691,7 +1691,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 I hope you are doing well!
 
-We would like to inform you that your ${item.type} membership will expire on ${formatDate(item.expiryDate)}. We kindly request that you renew your membership by making a payment of ${formatCurrency(item.amount)} per annum as soon as possible. You can choose to pay online or by cheque. After making the payment, please send us the transaction details so that we can verify with our Institute Account Section whether the payment has been successfully processed. Once we have confirmed the payment, we will proceed with renewing your membership and creating new cards.
+We would like to inform you that your ${(item.category === 'Other' ? 'Personal' : (item.category || item.type))} membership will expire on ${formatDate(item.expiryDate)}. We kindly request that you renew your membership by making a payment of ${formatCurrency(item.amount)} per annum as soon as possible. You can choose to pay online or by cheque. After making the payment, please send us the transaction details so that we can verify with our Institute Account Section whether the payment has been successfully processed. Once we have confirmed the payment, we will proceed with renewing your membership and creating new cards.
 
 Bank Account details are as follows:
 
