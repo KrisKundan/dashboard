@@ -1703,23 +1703,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Build HTML body — Gmail compose supports HTML via the body param
         const htmlBody =
-`Dear ${item.authName || item.name},<br><br>
-I hope you are doing well!<br><br>
-We would like to inform you that your ${(item.category === 'Other' ? 'Personal' : (item.category || item.type))} membership will expire on ${formatDate(item.expiryDate)}. We kindly request that you renew your membership by making a payment of ${formatCurrency(item.amount)} per annum as soon as possible. You can choose to pay online or by cheque. After making the payment, please send us the transaction details so that we can verify with our Institute Account Section whether the payment has been successfully processed. Once we have confirmed the payment, we will proceed with renewing your membership and creating new cards.<br><br>
-Bank Account details are as follows:<br><br>
-Name of Account:&nbsp; IIT Gandhinagar IR A/C<br>
-Name of Bank: Canara Bank<br>
-IFSC Code: CNRB0005159<br>
-Account No.: 5159132000006<br>
-MICR Code: 380015052<br><br><br>
-We are eagerly anticipating your kind cooperation in this matter and greatly appreciate the value of membership. Additionally, we strongly encourage you to utilize the services and facilities offered by the library for your academic needs. We are delighted to assist you with this matter.<br><br><br>
-Thanks &amp; Regards<br>
-Library Services | पुस्तकालय सेवाएँ<br>
-Indian Institute of Technology Gandhinagar<br>
-भारतीय प्रौद्योगिकी संस्थान गांधीनगर<br>
-Palaj | पालज | Gandhinagar | गांधीनगर- 382055<br>
-Gujarat | गुजरात&nbsp; (INDIA&nbsp; | भारत )<br>
-Phone | दूरभाष: + 91-079-2395 2622<br>
+`Dear ${item.authName || item.name},
+
+I hope you are doing well!
+
+We would like to inform you that your ${(item.category === 'Other' ? 'Personal' : (item.category || item.type))} membership will expire on ${formatDate(item.expiryDate)}. We kindly request that you renew your membership by making a payment of ${formatCurrency(item.amount)} per annum as soon as possible. You can choose to pay online or by cheque. After making the payment, please send us the transaction details so that we can verify with our Institute Account Section whether the payment has been successfully processed. Once we have confirmed the payment, we will proceed with renewing your membership and creating new cards.
+
+Bank Account details are as follows:
+
+Name of Account: IIT Gandhinagar IR A/C
+Name of Bank: Canara Bank
+IFSC Code: CNRB0005159
+Account No.: 5159132000006
+MICR Code: 380015052
+
+We are eagerly anticipating your kind cooperation in this matter and greatly appreciate the value of membership. Additionally, we strongly encourage you to utilize the services and facilities offered by the library for your academic needs. We are delighted to assist you with this matter.
+
+Thanks & Regards
+Library Services | पुस्तकालय सेवाएँ
+Indian Institute of Technology Gandhinagar
+भारतीय प्रौद्योगिकी संस्थान गांधीनगर
+Palaj | पालज | Gandhinagar | गांधीनगर- 382055
+Gujarat | गुजरात (INDIA | भारत )
+Phone | दूरभाष: + 91-079-2395 2622
 Website II Online Catalogue II Digital Repository`;
 
         const body = encodeURIComponent(htmlBody);
