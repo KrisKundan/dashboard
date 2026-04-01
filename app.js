@@ -1733,8 +1733,8 @@ Register now`
         }
 
         if (primaryEmail && primaryEmail.trim() !== '') {
-            const gmailLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${targetEmail}&su=${subject}&body=${body}`;
-            window.open(`https://accounts.google.com/AccountChooser?Email=${encodeURIComponent(primaryEmail.trim())}&continue=${encodeURIComponent(gmailLink)}`, '_blank');
+            const gmailLink = `https://mail.google.com/mail/u/${encodeURIComponent(primaryEmail.trim())}/?view=cm&fs=1&to=${targetEmail}&su=${subject}&body=${body}`;
+            window.open(gmailLink, '_blank');
         } else {
             const gmailLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${targetEmail}&su=${subject}&body=${body}`;
             window.open(`https://accounts.google.com/AccountChooser?continue=${encodeURIComponent(gmailLink)}`, '_blank');
