@@ -1697,13 +1697,11 @@ Bank Account details are as follows:
 
       Name of Account:  IIT Gandhinagar IR A/C
 
-Name of Bank: Canara Bank
-
-IFSC Code: CNRB0005159
-
-Account No.: 5159132000006
-
-MICR Code: 380015052
+---------------------------------------------------------
+Name of Bank: Canara Bank     | IFSC Code: CNRB0005159
+---------------------------------------------------------
+Account No.: 5159132000006    | MICR Code: 380015052
+---------------------------------------------------------
 
 
 We are eagerly anticipating your kind cooperation in this matter and greatly appreciate the value of membership. Additionally, we strongly encourage you to utilize the services and facilities offered by the library for your academic needs. We are delighted to assist you with this matter.
