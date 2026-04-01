@@ -1722,8 +1722,6 @@ We are eagerly anticipating your kind cooperation in this matter and greatly app
 
 
 Thanks & Regards
--
-
 Library Services | पुस्तकालय सेवाएँ
 Indian Institute of Technology Gandhinagar
 भारतीय प्रौद्योगिकी संस्थान गांधीनगर
@@ -1731,7 +1729,6 @@ Palaj | पालज | Gandhinagar | गांधीनगर- 382055
 Gujarat | गुजरात  (INDIA  | भारत )
 Phone | दूरभाष: + 91-079-2395 2622
 Website II Online Catalogue II Digital Repository
-Follow Us :    
 ------------------------------------------
 Share the joy of reading and win amazing prizes too!
  presents Book Review Writing Competition for all students.
