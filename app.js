@@ -1683,7 +1683,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             `IITGN Library Membership Desk`
         );
 
-        window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${targetEmail}&su=${subject}&body=${body}`, '_blank');
+        const gmailLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${targetEmail}&su=${subject}&body=${body}`;
+        window.open(`https://accounts.google.com/AccountChooser?continue=${encodeURIComponent(gmailLink)}`, '_blank');
     };
 
     function updateNotifications(filter = activeDrawerFilter) {
