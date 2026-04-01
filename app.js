@@ -1699,13 +1699,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const days = getDaysUntilExpiry(item.expiryDate);
         const isExpired = days < 0;
         
-        const subject = encodeURIComponent(`Subscription Renewal Reminder - IITGN Library`);
+        const subject = encodeURIComponent(`Reminder for Renewal of Library ${item.type} Membership`);
         const body = encodeURIComponent(
 `Dear ${item.authName || item.name},
 
 I hope you are doing well!
 
-We would like to inform you that your ${(item.category === 'Other' ? 'Personal' : (item.category || item.type))} membership will expire on ${formatDate(item.expiryDate)}. We kindly request that you renew your membership by making a payment of ${formatCurrency(item.amount)} per annum as soon as possible. You can choose to pay online or by cheque. After making the payment, please send us the transaction details so that we can verify with our Institute Account Section whether the payment has been successfully processed. Once we have confirmed the payment, we will proceed with renewing your membership and creating new cards.
+We would like to inform you that your ${(item.category === 'Other' ? 'Personal' : (item.category || item.type))} membership will expire on *${formatDate(item.expiryDate)}*. We kindly request that you renew your membership by making a payment of *${formatCurrency(item.amount)}* per annum as soon as possible. You can choose to pay online or by cheque. After making the payment, please send us the transaction details so that we can verify with our Institute Account Section whether the payment has been successfully processed. Once we have confirmed the payment, we will proceed with renewing your membership and creating new cards.
 
 Bank Account details are as follows:
 
@@ -1726,11 +1726,7 @@ Indian Institute of Technology Gandhinagar
 Palaj | पालज | Gandhinagar | गांधीनगर- 382055
 Gujarat | गुजरात  (INDIA  | भारत )
 Phone | दूरभाष: + 91-079-2395 2622
-Website II Online Catalogue II Digital Repository
-------------------------------------------
-Share the joy of reading and win amazing prizes too!
- presents Book Review Writing Competition for all students.
-Register now`
+Website II Online Catalogue II Digital Repository`
         );
 
         let primaryEmail = globalPrimarySenderEmail !== null ? globalPrimarySenderEmail : localStorage.getItem('primarySenderEmail');
