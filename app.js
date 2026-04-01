@@ -125,18 +125,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- 0.2 Primary Email Logic ---
-    const navPrimaryEmailBtn = document.getElementById('navPrimaryEmailBtn');
-    if (navPrimaryEmailBtn) {
-        navPrimaryEmailBtn.addEventListener('click', () => {
-            const currentEmail = localStorage.getItem('primarySenderEmail') || '';
-            const newEmail = window.prompt("Enter the Gmail address you want to use as the primary sender account for reminders. Leave blank to be prompted with the account chooser.", currentEmail);
-            if (newEmail !== null) {
-                localStorage.setItem('primarySenderEmail', newEmail.trim());
-            }
-        });
-    }
-
     // Ensure Firebase is initialized
     if (!window.db) {
         console.error("Firebase not initialized in window.db");
@@ -144,6 +132,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     const db = window.db;
     const membershipsCollection = collection(db, "memberships");
+
+    // --- 0.2 Primary Email Logic (Firebase Synced) ---
+    let globalPrimarySenderEmail = null;
+    const settingsDocRef = doc(db, "settings", "general");
+    
+    onSnapshot(settingsDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+            globalPrimarySenderEmail = docSnap.data().primarySenderEmail !== undefined ? docSnap.data().primarySenderEmail : null;
+        } else {
+            globalPrimarySenderEmail = null;
+        }
+    });
+
+    const navPrimaryEmailBtn = document.getElementById('navPrimaryEmailBtn');
+    if (navPrimaryEmailBtn) {
+        navPrimaryEmailBtn.addEventListener('click', () => {
+            const currentEmail = globalPrimarySenderEmail !== null ? globalPrimarySenderEmail : (localStorage.getItem('primarySenderEmail') || '');
+            const newEmail = window.prompt("Enter the Gmail address you want to use as the primary sender account for reminders. Leave blank to be prompted with the account chooser.", currentEmail);
+            if (newEmail !== null) {
+                // Save to Firestore so it syncs across devices
+                setDoc(settingsDocRef, { primarySenderEmail: newEmail.trim() }, { merge: true });
+                // Fallback local cache
+                localStorage.setItem('primarySenderEmail', newEmail.trim());
+            }
+        });
+    }
     // 1. Theme Toggling Logic
     const themeToggleBtn = document.getElementById('themeToggle');
     const moonIcon = document.getElementById('moonIcon');
@@ -1724,10 +1738,11 @@ Share the joy of reading and win amazing prizes too!
 Register now`
         );
 
-        let primaryEmail = localStorage.getItem('primarySenderEmail');
+        let primaryEmail = globalPrimarySenderEmail !== null ? globalPrimarySenderEmail : localStorage.getItem('primarySenderEmail');
         if (primaryEmail === null) {
             primaryEmail = window.prompt("Enter the Gmail address you want to use as the primary sender account for reminders. Leave blank to be prompted with the account chooser.");
             if (primaryEmail !== null) {
+                setDoc(doc(window.db, "settings", "general"), { primarySenderEmail: primaryEmail.trim() }, { merge: true });
                 localStorage.setItem('primarySenderEmail', primaryEmail.trim());
             }
         }
