@@ -1678,6 +1678,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         return Math.ceil((exp - now) / (1000 * 3600 * 24));
     }
 
+    function toBoldUnicode(text) {
+        const map = {
+            '0':'𝟎','1':'𝟏','2':'𝟐','3':'𝟑','4':'𝟒','5':'𝟓','6':'𝟔','7':'𝟕','8':'𝟖','9':'𝟗',
+            'A':'𝐀','B':'𝐁','C':'𝐂','D':'𝐃','E':'𝐄','F':'𝐅','G':'𝐆','H':'𝐇','I':'𝐈','J':'𝐉','K':'𝐊','L':'𝐋','M':'𝐌','N':'𝐍','O':'𝐎','P':'𝐏','Q':'𝐐','R':'𝐑','S':'𝐒','T':'𝐓','U':'𝐔','V':'𝐕','W':'𝐖','X':'𝐗','Y':'𝐘','Z':'𝐙',
+            'a':'𝐚','b':'𝐛','c':'𝐜','d':'𝐝','e':'𝐞','f':'𝐟','g':'𝐠','h':'𝐡','i':'𝐢','j':'𝐣','k':'𝐤','l':'𝐥','m':'𝐦','n':'𝐧','o':'𝐨','p':'𝐩','q':'𝐪','r':'𝐫','s':'𝐬','t':'𝐭','u':'𝐮','v':'𝐯','w':'𝐰','x':'𝐱','y':'𝐲','z':'𝐳'
+        };
+        return Array.from(String(text)).map(c => map[c] || c).join('');
+    }
+
     window.sendReminderEmail = function(memberId) {
         const item = memberships.find(m => m.id === memberId);
         if (!item) return;
@@ -1705,7 +1714,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 I hope you are doing well!
 
-We would like to inform you that your ${(item.category === 'Other' ? 'Personal' : (item.category || item.type))} membership will expire on *${formatDate(item.expiryDate)}*. We kindly request that you renew your membership by making a payment of *${formatCurrency(item.amount)}* per annum as soon as possible. You can choose to pay online or by cheque. After making the payment, please send us the transaction details so that we can verify with our Institute Account Section whether the payment has been successfully processed. Once we have confirmed the payment, we will proceed with renewing your membership and creating new cards.
+We would like to inform you that your ${(item.category === 'Other' ? 'Personal' : (item.category || item.type))} membership will expire on ${toBoldUnicode(formatDate(item.expiryDate))}. We kindly request that you renew your membership by making a payment of ${toBoldUnicode(formatCurrency(item.amount))} per annum as soon as possible. You can choose to pay online or by cheque. After making the payment, please send us the transaction details so that we can verify with our Institute Account Section whether the payment has been successfully processed. Once we have confirmed the payment, we will proceed with renewing your membership and creating new cards.
 
 Bank Account details are as follows:
 
