@@ -1678,15 +1678,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return Math.ceil((exp - now) / (1000 * 3600 * 24));
     }
 
-    function toBoldUnicode(text) {
-        const map = {
-            '0':'𝟎','1':'𝟏','2':'𝟐','3':'𝟑','4':'𝟒','5':'𝟓','6':'𝟔','7':'𝟕','8':'𝟖','9':'𝟗',
-            'A':'𝐀','B':'𝐁','C':'𝐂','D':'𝐃','E':'𝐄','F':'𝐅','G':'𝐆','H':'𝐇','I':'𝐈','J':'𝐉','K':'𝐊','L':'𝐋','M':'𝐌','N':'𝐍','O':'𝐎','P':'𝐏','Q':'𝐐','R':'𝐑','S':'𝐒','T':'𝐓','U':'𝐔','V':'𝐕','W':'𝐖','X':'𝐗','Y':'𝐘','Z':'𝐙',
-            'a':'𝐚','b':'𝐛','c':'𝐜','d':'𝐝','e':'𝐞','f':'𝐟','g':'𝐠','h':'𝐡','i':'𝐢','j':'𝐣','k':'𝐤','l':'𝐥','m':'𝐦','n':'𝐧','o':'𝐨','p':'𝐩','q':'𝐪','r':'𝐫','s':'𝐬','t':'𝐭','u':'𝐮','v':'𝐯','w':'𝐰','x':'𝐱','y':'𝐲','z':'𝐳'
-        };
-        return Array.from(String(text)).map(c => map[c] || c).join('');
-    }
-
     window.sendReminderEmail = function(memberId) {
         const item = memberships.find(m => m.id === memberId);
         if (!item) return;
@@ -1707,36 +1698,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const days = getDaysUntilExpiry(item.expiryDate);
         const isExpired = days < 0;
-        
+
         const subject = encodeURIComponent(`Reminder for Renewal of Library ${item.type} Membership`);
-        const body = encodeURIComponent(
-`Dear ${item.authName || item.name},
 
-I hope you are doing well!
+        // Build HTML body — Gmail compose supports HTML via the body param
+        const htmlBody =
+`Dear ${item.authName || item.name},<br><br>
+I hope you are doing well!<br><br>
+We would like to inform you that your ${(item.category === 'Other' ? 'Personal' : (item.category || item.type))} membership will expire on <b>${formatDate(item.expiryDate)}</b>. We kindly request that you renew your membership by making a payment of <b>${formatCurrency(item.amount)}</b> per annum as soon as possible. You can choose to pay online or by cheque. After making the payment, please send us the transaction details so that we can verify with our Institute Account Section whether the payment has been successfully processed. Once we have confirmed the payment, we will proceed with renewing your membership and creating new cards.<br><br>
+Bank Account details are as follows:<br><br>
+Name of Account:&nbsp; IIT Gandhinagar IR A/C<br>
+Name of Bank: Canara Bank<br>
+IFSC Code: CNRB0005159<br>
+Account No.: 5159132000006<br>
+MICR Code: 380015052<br><br><br>
+We are eagerly anticipating your kind cooperation in this matter and greatly appreciate the value of membership. Additionally, we strongly encourage you to utilize the services and facilities offered by the library for your academic needs. We are delighted to assist you with this matter.<br><br><br>
+Thanks &amp; Regards<br>
+Library Services | पुस्तकालय सेवाएँ<br>
+Indian Institute of Technology Gandhinagar<br>
+भारतीय प्रौद्योगिकी संस्थान गांधीनगर<br>
+Palaj | पालज | Gandhinagar | गांधीनगर- 382055<br>
+Gujarat | गुजरात&nbsp; (INDIA&nbsp; | भारत )<br>
+Phone | दूरभाष: + 91-079-2395 2622<br>
+Website II Online Catalogue II Digital Repository`;
 
-We would like to inform you that your ${(item.category === 'Other' ? 'Personal' : (item.category || item.type))} membership will expire on ${toBoldUnicode(formatDate(item.expiryDate))}. We kindly request that you renew your membership by making a payment of ${toBoldUnicode(formatCurrency(item.amount))} per annum as soon as possible. You can choose to pay online or by cheque. After making the payment, please send us the transaction details so that we can verify with our Institute Account Section whether the payment has been successfully processed. Once we have confirmed the payment, we will proceed with renewing your membership and creating new cards.
-
-Bank Account details are as follows:
-
-Name of Account:  IIT Gandhinagar IR A/C
-Name of Bank: Canara Bank
-IFSC Code: CNRB0005159
-Account No.: 5159132000006
-MICR Code: 380015052
-
-
-We are eagerly anticipating your kind cooperation in this matter and greatly appreciate the value of membership. Additionally, we strongly encourage you to utilize the services and facilities offered by the library for your academic needs. We are delighted to assist you with this matter.
-
-
-Thanks & Regards
-Library Services | पुस्तकालय सेवाएँ
-Indian Institute of Technology Gandhinagar
-भारतीय प्रौद्योगिकी संस्थान गांधीनगर
-Palaj | पालज | Gandhinagar | गांधीनगर- 382055
-Gujarat | गुजरात  (INDIA  | भारत )
-Phone | दूरभाष: + 91-079-2395 2622
-Website II Online Catalogue II Digital Repository`
-        );
+        const body = encodeURIComponent(htmlBody);
 
         let primaryEmail = globalPrimarySenderEmail !== null ? globalPrimarySenderEmail : localStorage.getItem('primarySenderEmail');
         if (primaryEmail === null) {
