@@ -125,6 +125,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // --- 0.2 Primary Email Logic ---
+    const navPrimaryEmailBtn = document.getElementById('navPrimaryEmailBtn');
+    if (navPrimaryEmailBtn) {
+        navPrimaryEmailBtn.addEventListener('click', () => {
+            const currentEmail = localStorage.getItem('primarySenderEmail') || '';
+            const newEmail = window.prompt("Enter the Gmail address you want to use as the primary sender account for reminders. Leave blank to be prompted with the account chooser.", currentEmail);
+            if (newEmail !== null) {
+                localStorage.setItem('primarySenderEmail', newEmail.trim());
+            }
+        });
+    }
+
     // Ensure Firebase is initialized
     if (!window.db) {
         console.error("Firebase not initialized in window.db");
@@ -1683,8 +1695,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             `IITGN Library Membership Desk`
         );
 
-        const gmailLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${targetEmail}&su=${subject}&body=${body}`;
-        window.open(`https://accounts.google.com/AccountChooser?continue=${encodeURIComponent(gmailLink)}`, '_blank');
+        let primaryEmail = localStorage.getItem('primarySenderEmail');
+        if (primaryEmail === null) {
+            primaryEmail = window.prompt("Enter the Gmail address you want to use as the primary sender account for reminders. Leave blank to be prompted with the account chooser.");
+            if (primaryEmail !== null) {
+                localStorage.setItem('primarySenderEmail', primaryEmail.trim());
+            }
+        }
+
+        if (primaryEmail && primaryEmail.trim() !== '') {
+            const gmailLink = `https://mail.google.com/mail/u/${encodeURIComponent(primaryEmail.trim())}/?view=cm&fs=1&to=${targetEmail}&su=${subject}&body=${body}`;
+            window.open(gmailLink, '_blank');
+        } else {
+            const gmailLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${targetEmail}&su=${subject}&body=${body}`;
+            window.open(`https://accounts.google.com/AccountChooser?continue=${encodeURIComponent(gmailLink)}`, '_blank');
+        }
     };
 
     function updateNotifications(filter = activeDrawerFilter) {
