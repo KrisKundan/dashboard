@@ -1678,6 +1678,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         return Math.ceil((exp - now) / (1000 * 3600 * 24));
     }
 
+    function toBoldChars(text) {
+        const boldMap = {
+            '0': '𝟬', '1': '𝟭', '2': '𝟮', '3': '𝟯', '4': '𝟰', '5': '𝟱', '6': '𝟲', '7': '𝟳', '8': '𝟴', '9': '𝟵',
+            'A': '𝗔', 'B': '𝗕', 'C': '𝗖', 'D': '𝗗', 'E': '𝗘', 'F': '𝗙', 'G': '𝗚', 'H': '𝗛', 'I': '𝗜', 'J': '𝗝',
+            'K': '𝗞', 'L': '𝗟', 'M': '𝗠', 'N': '𝗡', 'O': '𝗢', 'P': '𝗣', 'Q': '𝗤', 'R': '𝗥', 'S': '𝗦', 'T': '𝗧',
+            'U': '𝗨', 'V': '𝗩', 'W': '𝗪', 'X': '𝗫', 'Y': '𝗬', 'Z': '𝗭',
+            'a': '𝗮', 'b': '𝗯', 'c': '𝗰', 'd': '𝗱', 'e': '𝗲', 'f': '𝗳', 'g': '𝗴', 'h': '𝗵', 'i': '𝗶', 'j': '𝗷',
+            'k': '𝗸', 'l': '𝗹', 'm': '𝗺', 'n': '𝗻', 'o': '𝗼', 'p': '𝗽', 'q': '𝗾', 'r': '𝗿', 's': '𝘀', 't': '𝘁',
+            'u': '𝘂', 'v': '𝘃', 'w': '𝘄', 'x': '𝘅', 'y': '𝘆', 'z': '𝘇'
+        };
+        return text.split('').map(c => boldMap[c] || c).join('');
+    }
+
     window.sendReminderEmail = function(memberId) {
         const item = memberships.find(m => m.id === memberId);
         if (!item) return;
@@ -1707,7 +1720,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 I hope you are doing well!
 
-We would like to inform you that your ${(item.category === 'Other' ? 'Personal' : (item.category || item.type))} membership will expire on ${formatDate(item.expiryDate)}. We kindly request that you renew your membership by making a payment of ${formatCurrency(item.amount)} per annum as soon as possible. You can choose to pay online or by cheque. After making the payment, please send us the transaction details so that we can verify with our Institute Account Section whether the payment has been successfully processed. Once we have confirmed the payment, we will proceed with renewing your membership and creating new cards.
+We would like to inform you that your ${(item.category === 'Other' ? 'Personal' : (item.category || item.type))} membership will expire on ${toBoldChars(formatDate(item.expiryDate))}. We kindly request that you renew your membership by making a payment of ${toBoldChars(formatCurrency(item.amount))} per annum as soon as possible. You can choose to pay online or by cheque. After making the payment, please send us the transaction details so that we can verify with our Institute Account Section whether the payment has been successfully processed. Once we have confirmed the payment, we will proceed with renewing your membership and creating new cards.
 
 Bank Account details are as follows:
 
