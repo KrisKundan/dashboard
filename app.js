@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- 0.1 Change Password Logic ---
+    // --- 0.1 Account Settings Logic ---
     const navChangePasswordBtn = document.getElementById('navChangePasswordBtn');
     const changePasswordModal = document.getElementById('changePasswordModal');
     const closeChangePasswordBtn = document.getElementById('closeChangePasswordBtn');
@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const changePasswordForm = document.getElementById('changePasswordForm');
     
     // Inputs
+    const newIdInput = document.getElementById('newId');
     const currentPasswordInput = document.getElementById('currentPassword');
     const newPasswordInput = document.getElementById('newPassword');
     const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
@@ -92,6 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             changePasswordError.style.display = 'none';
             changePasswordSuccess.style.display = 'none';
 
+            const newIdParam = newIdInput.value.trim();
             const currentPass = currentPasswordInput.value.trim();
             const newPass = newPasswordInput.value.trim();
             const confirmPass = confirmNewPasswordInput.value.trim();
@@ -104,19 +106,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            if (newPass !== confirmPass) {
-                changePasswordError.textContent = 'New passwords do not match.';
-                changePasswordError.style.display = 'block';
-                return;
+            if (newPass || confirmPass) {
+                if (newPass !== confirmPass) {
+                    changePasswordError.textContent = 'New passwords do not match.';
+                    changePasswordError.style.display = 'block';
+                    return;
+                }
+                if (newPass.length < 6) {
+                    changePasswordError.textContent = 'Password must be at least 6 characters.';
+                    changePasswordError.style.display = 'block';
+                    return;
+                }
+                localStorage.setItem('adminPassword', newPass);
             }
 
-            if (newPass.length < 6) {
-                changePasswordError.textContent = 'Password must be at least 6 characters.';
-                changePasswordError.style.display = 'block';
-                return;
+            if (newIdParam) {
+                localStorage.setItem('adminId', newIdParam);
             }
 
-            localStorage.setItem('adminPassword', newPass);
             changePasswordSuccess.style.display = 'block';
             
             setTimeout(() => {
