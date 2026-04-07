@@ -209,28 +209,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // --- 2. State & Mock Data ---
-    const defaultMemberships = [
-        { 
-            id: 'M-0001', memberId: 'M-0001', name: 'JSW Steel Plant', amount: 268071, type: 'Organisation', category: 'Corporate', subCategory: 'Reference', admissionFee: 10000, depositToggle: 'No', depositAmount: 0, status: 'Expired', 
-            date: '2024-03-11', expiryDate: '2025-03-11', phone: '9010626991', email: 'jsw.steel.plant38@gmail.com',
-            address: 'Mumbai, Maharashtra', gstin: '357RIKO99HA19ZT', invoiceNo: 'INV-12010',
-            authName: 'Ramesh Jindal', authPhone: '9876543211', authEmail: 'ramesh.j@jsw.in',
-            invoiceHistory: [
-                { invoiceNo: 'INV-12010', date: '2024-03-11', expiryDate: '2025-03-11', amount: 268071, status: 'Expired' }
-            ]
-        },
-        { 
-            id: 'M-0058', memberId: 'M-0058', name: 'Tata Motors', amount: 134130, type: 'Organisation', category: 'Corporate', subCategory: 'Borrowing', admissionFee: 50000, depositToggle: 'Yes', depositAmount: 100000, status: 'Active', 
-            date: '2024-05-20', expiryDate: '2025-05-20', phone: '9876543210', email: 'contact@tatamotors.com',
-            address: 'Pune, Maharashtra', gstin: '27AAAAA0000A1Z5', invoiceNo: 'INV-12058',
-            authName: 'Sunil Tata', authPhone: '9988776655', authEmail: 'sunil.t@tatamotors.com',
-            invoiceHistory: [
-                { invoiceNo: 'INV-12020', date: '2022-05-20', expiryDate: '2023-05-20', amount: 110000, status: 'Expired' },
-                { invoiceNo: 'INV-12040', date: '2023-05-20', expiryDate: '2024-05-20', amount: 125000, status: 'Expired' },
-                { invoiceNo: 'INV-12058', date: '2024-05-20', expiryDate: '2025-05-20', amount: 134130, status: 'Active' }
-            ]
-        }
-    ];
+    const defaultMemberships = [];
 
     // Initialize from Firestore
     let memberships = [];
