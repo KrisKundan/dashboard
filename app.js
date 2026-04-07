@@ -247,6 +247,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             // If we loaded default data because Firestore is empty, save it
             if (loaded.length === 0) {
                 memberships.forEach(m => saveData(m));
+            } else {
+                // Check if dummy data exists, if not inject 5 dummy items for testing
+                const hasDummies = memberships.some(m => m.id === 'DUMMY-1');
+                if (!hasDummies) {
+                    const dummyData = [
+                        { id: 'DUMMY-1', memberId: 'DUMMY-1', name: 'Acme Corp', amount: 50000, type: 'Organisation', category: 'Corporate', subCategory: 'General', admissionFee: 5000, depositToggle: 'No', depositAmount: 0, status: 'Active', date: '2024-01-10', expiryDate: '2025-01-10', phone: '1234567890', email: 'contact@acme.corp', address: 'Bangalore, Karnataka', gstin: '29ABCDE1234F1Z5', invoiceNo: 'INV-D1', authName: 'Alice Smith', authPhone: '0987654321', authEmail: 'alice@acme.corp', invoiceHistory: [] },
+                        { id: 'DUMMY-2', memberId: 'DUMMY-2', name: 'John Doe', amount: 3000, type: 'Personal', category: 'Individual', subCategory: 'Personal', admissionFee: 500, depositToggle: 'Yes', depositAmount: 1000, status: 'Active', date: '2024-02-15', expiryDate: '2025-02-15', phone: '2345678901', email: 'john.doe@example.com', address: 'Delhi', gstin: '', invoiceNo: 'INV-D2', invoiceHistory: [] },
+                        { id: 'DUMMY-3', memberId: 'DUMMY-3', name: 'Global Tech', amount: 150000, type: 'Organisation', category: 'Corporate', subCategory: 'Borrowing', admissionFee: 20000, depositToggle: 'Yes', depositAmount: 50000, status: 'Expired', date: '2023-01-20', expiryDate: '2024-01-20', phone: '3456789012', email: 'billing@globaltech.in', address: 'Hyderabad, Telangana', gstin: '36XYZ12345A1Z5', invoiceNo: 'INV-D3', authName: 'Bob Jones', authPhone: '8765432109', authEmail: 'bob@globaltech.in', invoiceHistory: [] },
+                        { id: 'DUMMY-4', memberId: 'DUMMY-4', name: 'Jane Smith', amount: 1500, type: 'Personal', category: 'Individual', subCategory: 'Alumni', admissionFee: 200, depositToggle: 'No', depositAmount: 0, status: 'Active', date: '2024-04-01', expiryDate: '2025-04-01', phone: '4567890123', email: 'jane.smith@alumni.edu', address: 'Chennai, Tamil Nadu', gstin: '', invoiceNo: 'INV-D4', invoiceHistory: [] },
+                        { id: 'DUMMY-5', memberId: 'DUMMY-5', name: 'Innovate Labs', amount: 75000, type: 'Organisation', category: 'Educational', subCategory: 'Reference', admissionFee: 10000, depositToggle: 'No', depositAmount: 0, status: 'Warning', date: '2024-04-15', expiryDate: '2024-05-15', phone: '5678901234', email: 'hello@innovatelabs.co', address: 'Pune, Maharashtra', gstin: '27PQRST6789B1Z5', invoiceNo: 'INV-D5', authName: 'Charlie Brown', authPhone: '7654321098', authEmail: 'charlie@innovatelabs.co', invoiceHistory: [] }
+                    ];
+                    dummyData.forEach(m => {
+                        saveData(m);
+                        memberships.push(m);
+                    });
+                }
             }
             
             updateStats();
