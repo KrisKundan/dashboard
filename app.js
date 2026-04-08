@@ -487,7 +487,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         let filtered = memberships.filter(m => {
             const matchesSearch = m.name.toLowerCase().includes(searchQuery) || 
                                   m.id.toLowerCase().includes(searchQuery);
-            const matchesFilter = currentFilter === 'All' || m.type === currentFilter;
+            
+            let matchesFilter = false;
+            if (currentFilter === 'All') {
+                matchesFilter = true;
+            } else if (currentFilter === 'Active') {
+                matchesFilter = (m.status === 'Active' || m.status === 'Warning');
+            } else if (currentFilter === 'Expired') {
+                matchesFilter = (m.status === 'Expired');
+            } else {
+                matchesFilter = (m.type === currentFilter);
+            }
+            
             return matchesSearch && matchesFilter;
         });
 
