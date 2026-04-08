@@ -502,6 +502,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             return matchesSearch && matchesFilter;
         });
 
+        // Sort Data
+        const sortSelect = document.getElementById('sortSelect');
+        const sortValue = sortSelect ? sortSelect.value : 'newest';
+        
+        filtered.sort((a, b) => {
+            if (sortValue === 'idAsc') {
+                return a.id.localeCompare(b.id);
+            } else if (sortValue === 'idDesc') {
+                return b.id.localeCompare(a.id);
+            } else if (sortValue === 'nameAsc') {
+                return a.name.localeCompare(b.name);
+            } else if (sortValue === 'nameDesc') {
+                return b.name.localeCompare(a.name);
+            } else if (sortValue === 'amountDesc') {
+                return b.amount - a.amount;
+            } else if (sortValue === 'amountAsc') {
+                return a.amount - b.amount;
+            } else {
+                // newest
+                return new Date(b.date) - new Date(a.date);
+            }
+        });
+
         resultsTextEl.textContent = `${filtered.length} subscriptions found`;
 
         // Clear List
@@ -1895,7 +1918,15 @@ Website II Online Catalogue II Digital Repository`;
     closeDrawerBtn.addEventListener('click', () => toggleDrawer(true));
     drawerOverlay.addEventListener('click', () => toggleDrawer(true));
 
-    // --- 8. Initial Render ---
+    // --- 8. Initialization & Listeners ---
+    const sortSelect = document.getElementById('sortSelect');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', () => {
+            currentPage = 1;
+            renderList();
+        });
+    }
+
     // Start the loading process
     loadData();
 });
