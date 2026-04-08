@@ -539,16 +539,53 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Render Page Numbers
         pageNumbersEl.innerHTML = '';
-        for (let i = 1; i <= totalPages; i++) {
+        
+        const createBtn = (pageNum, text, isCurrent = false, isDisabled = false) => {
             const btn = document.createElement('button');
-            btn.className = `btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-outline'}`;
+            btn.className = `btn btn-sm ${isCurrent ? 'btn-primary' : 'btn-outline'}`;
             btn.style.margin = '0 2px';
-            btn.textContent = i;
-            btn.addEventListener('click', () => {
-                currentPage = i;
-                renderList();
-            });
-            pageNumbersEl.appendChild(btn);
+            btn.textContent = text || pageNum;
+            if (isDisabled) {
+                btn.disabled = true;
+                btn.style.border = 'none';
+                btn.style.background = 'transparent';
+                btn.style.color = 'var(--text-secondary)';
+                btn.style.cursor = 'default';
+            } else {
+                btn.addEventListener('click', () => {
+                    currentPage = pageNum;
+                    renderList();
+                });
+            }
+            return btn;
+        };
+
+        if (totalPages <= 3) {
+            // Show all if 3 or less
+            for (let i = 1; i <= totalPages; i++) {
+                pageNumbersEl.appendChild(createBtn(i, i, i === currentPage));
+            }
+        } else {
+            // 1. Always show first
+            pageNumbersEl.appendChild(createBtn(1, 1, currentPage === 1));
+            
+            // 2. Ellipsis before current (if current > 2)
+            if (currentPage > 2) {
+                pageNumbersEl.appendChild(createBtn(null, '...', false, true));
+            }
+            
+            // 3. Show current page (if it's not first or last)
+            if (currentPage !== 1 && currentPage !== totalPages) {
+                pageNumbersEl.appendChild(createBtn(currentPage, currentPage, true));
+            }
+            
+            // 4. Ellipsis after current (if current < totalPages - 1)
+            if (currentPage < totalPages - 1) {
+                pageNumbersEl.appendChild(createBtn(null, '...', false, true));
+            }
+            
+            // 5. Always show last
+            pageNumbersEl.appendChild(createBtn(totalPages, totalPages, currentPage === totalPages));
         }
     }
 
